@@ -1,0 +1,16 @@
+(function (K) {
+(K.lessons = K.lessons || {})["java/methods"] = {
+  id: "methods", title: "Methods", language: "java", n: 7,
+  summary: "Ang method ay named block na puwedeng tumanggap ng input at magbalik ng result.",
+  code: "public class Main {\n    static String greet(String name) {\n        return \"Hi, \" + name + \"!\";\n    }\n\n    public static void main(String[] args) {\n        String message = greet(\"Ana\");\n        System.out.println(message);\n    }\n}",
+  annotations: [{ line: 2, from: 4, to: 10, text: "Ang static String ay nangangahulugang class method ito na nagbabalik ng String." }, { line: 2, from: 26, to: 37, text: "Parameter ito: String ang type at name ang variable name." }, { line: 3, from: 8, to: 14, text: "Ibinabalik ng return ang result sa code na tumawag sa method." }, { line: 7, from: 26, to: 38, text: "Tinawag ang greet at ipinasa ang Ana bilang argument." }],
+  trace: [{ line: 6, vars: {} }, { line: 7, vars: { name: "Ana" }, note: "Tinawag ang greet gamit ang argument na Ana." }, { line: 3, vars: { name: "Ana", result: "Hi, Ana!" } }, { line: 7, vars: { message: "Hi, Ana!" } }, { line: 8, vars: { message: "Hi, Ana!" }, output: "Hi, Ana!" }],
+  editable: { starter: "public class Main {\n    static String greet(String name) {\n        return \"Hi, \" + name + \"!\";\n    }\n    public static void main(String[] args) {\n        System.out.println(greet(\"Ana\"));\n    }\n}", expectedOutput: "Hi, Ana!", language: "java" },
+  predict: [{ code: "static int doubleIt(int value) {\n    return value * 2;\n}\n// doubleIt(4)", answer: "8", explanation: "Ang method ibinabalik ang value multiplied by 2." }, { code: "static int add(int a, int b) {\n    return a + b;\n}\n// add(2, 5)", answer: "7", explanation: "Ang arguments na 2 at 5 ang naging a at b; 7 ang ibinalik." }],
+  debug: [{ buggyCode: "static int add(int a, int b) {\n    int total = a + b;\n}", check: "static int add(int a, int b) {\n    int total = a + b;\n    return total;\n}", hints: ["The method promises an int result but doesn't send one back.", "Ibalik ang total gamit ang return."], solution: "static int add(int a, int b) {\n    int total = a + b;\n    return total;\n}", explanation: "Missing return statement dahil int ang return type. Ibalik natin ang computed total." }],
+  reorder: [{ lines: ["static int add(int a, int b) {", "    return a + b;", "}", "System.out.println(add(2, 5));"], explanation: "I-define muna ang method, return sa loob nito, saka tawagin mula sa main." }],
+  animation: null,
+  kodigoCard: [{ label: "Define", snippet: "static int add(int a, int b)" }, { label: "Return", snippet: "return value;" }, { label: "Call", snippet: "add(2, 5)" }, { label: "No result", snippet: "static void printInfo()" }],
+  miniProject: { goal: "Gumawa ng method na nagco-convert ng minutes to seconds.", starter: "static int toSeconds(int minutes) {\n    // Ibalik ang seconds\n}\n// Tawagin ito gamit ang 3 minutes", hints: ["Isang minute ay 60 seconds.", "I-return ang minutes * 60, then print the call."], solution: "static int toSeconds(int minutes) {\n    return minutes * 60;\n}\n// Sa main: System.out.println(toSeconds(3));" }
+};
+})(window.Kodigo = window.Kodigo || {});

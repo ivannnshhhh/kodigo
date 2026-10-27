@@ -1,0 +1,16 @@
+(function (K) {
+(K.lessons = K.lessons || {})["java/conditional-statements"] = {
+  id: "conditional-statements", title: "Conditional Statements", language: "java", n: 3,
+  summary: "Pumili ng branch gamit ang if, else if, else, o switch.",
+  code: "int temperature = 31;\nif (temperature >= 30) {\n    System.out.println(\"Mainit ngayon.\");\n} else {\n    System.out.println(\"Presko ngayon.\");\n}",
+  annotations: [{ line: 2, from: 0, to: 2, text: "Tine-test ng if kung true ang condition bago patakbuhin ang block." }, { line: 2, from: 17, to: 19, text: "True ito kapag 30 o mas mataas ang temperature." }, { line: 4, from: 2, to: 6, text: "Tatama ang else kapag false ang condition sa if." }],
+  trace: [{ line: 1, vars: { temperature: 31 } }, { line: 2, vars: { temperature: 31 }, note: "31 >= 30 ay true." }, { line: 3, vars: { temperature: 31 }, output: "Mainit ngayon." }],
+  editable: { starter: "int score = 82;\nif (score >= 75) {\n    System.out.println(\"Passed\");\n} else {\n    System.out.println(\"Try again\");\n}", expectedOutput: "Passed", language: "java" },
+  predict: [{ code: "int age = 15;\nif (age >= 18) {\n    System.out.println(\"Adult\");\n} else {\n    System.out.println(\"Minor\");\n}", answer: "Minor", explanation: "False ang 15 >= 18, kaya else block ang tumakbo." }, { code: "int day = 2;\nswitch (day) {\n    case 1: System.out.println(\"Mon\"); break;\n    case 2: System.out.println(\"Tue\"); break;\n    default: System.out.println(\"Other\");\n}", answer: "Tue", explanation: "Match ang day sa case 2 kaya Tue ang output." }],
+  debug: [{ buggyCode: "int score = 65;\nif (score >= 75)\n    System.out.println(\"Passed\");", check: "int score = 65;\nif (score >= 75) {\n    System.out.println(\"Passed\");\n} else {\n    System.out.println(\"Try again\");\n}", hints: ["Java expects a block after the condition.", "Lagyan ng braces at magdagdag ng alternate branch."], solution: "int score = 65;\nif (score >= 75) {\n    System.out.println(\"Passed\");\n} else {\n    System.out.println(\"Try again\");\n}", explanation: "Naglagay tayo ng braces para malinaw ang block at else case." }],
+  reorder: [{ lines: ["int score = 80;", "if (score >= 75) {", "    System.out.println(\"Pass\");", "} else {", "    System.out.println(\"Retry\");", "}"], explanation: "Unahin ang value, condition, body, alternate branch, at closing brace." }],
+  animation: null,
+  kodigoCard: [{ label: "If", snippet: "if (condition) { }" }, { label: "Else", snippet: "else { }" }, { label: "Else if", snippet: "else if (condition)" }, { label: "Switch", snippet: "switch (value) { case ... }" }],
+  miniProject: { goal: "I-check kung pasado ang score (75 pataas).", starter: "int score = 72;\n// Gumamit ng if / else\n// Passing score ay 75", hints: ["I-compare ang score sa 75.", "I-print ang Passed o Review gamit ang System.out.println."], solution: "int score = 72;\nif (score >= 75) {\n    System.out.println(\"Passed\");\n} else {\n    System.out.println(\"Review\");\n}" }
+};
+})(window.Kodigo = window.Kodigo || {});

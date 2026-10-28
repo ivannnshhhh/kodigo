@@ -27,6 +27,7 @@ let searchTimer;
 let resizeTimer;
 let quizState = null;
 let memoryStep = 0;
+let touchCodeDrag = null;
 
 function resolveNavState(route) {
   const stored = getNav();
@@ -885,6 +886,36 @@ document.addEventListener("change", event => {
 });
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("pointerdown", enablePointerSorting);
+document.addEventListener("pointerdown", event => {
+  if (event.pointerType === "mouse") return;
+  const choice = event.target.closest(".code-choice");
+  if (!choice || choice.hidden) return;
+  event.preventDefault();
+  touchCodeDrag = { choice, pointerId: event.pointerId, slot: null };
+  choice.classList.add("dragging", "selected");
+  choice.setPointerCapture?.(event.pointerId);
+});
+document.addEventListener("pointermove", event => {
+  if (!touchCodeDrag || event.pointerId !== touchCodeDrag.pointerId) return;
+  const slot = document.elementFromPoint(event.clientX, event.clientY)?.closest(".code-drop-slot");
+  if (touchCodeDrag.slot && touchCodeDrag.slot !== slot) touchCodeDrag.slot.classList.remove("drag-over");
+  touchCodeDrag.slot = slot;
+  slot?.classList.add("drag-over");
+});
+document.addEventListener("pointerup", event => {
+  if (!touchCodeDrag || event.pointerId !== touchCodeDrag.pointerId) return;
+  const { choice, slot } = touchCodeDrag;
+  slot?.classList.remove("drag-over");
+  choice.classList.remove("dragging");
+  if (slot && slot.closest("[data-reorder]") === choice.closest("[data-reorder]")) placeCodeChoice(slot, choice);
+  touchCodeDrag = null;
+});
+document.addEventListener("pointercancel", event => {
+  if (!touchCodeDrag || event.pointerId !== touchCodeDrag.pointerId) return;
+  touchCodeDrag.slot?.classList.remove("drag-over");
+  touchCodeDrag.choice.classList.remove("dragging");
+  touchCodeDrag = null;
+});
 document.addEventListener("dragstart", event => {
   const choice = event.target.closest(".code-choice");
   if (!choice) return;

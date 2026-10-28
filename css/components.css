@@ -68,7 +68,7 @@ p { max-width: 75ch; margin: 0; }
   .code-drop-slot.incorrect { border-color: var(--danger); }
   .drop-line-number { color: var(--text-muted); user-select: none; }
   .code-choice-tray { display: flex; flex-wrap: wrap; gap: 8px; }
-  .code-choice { max-width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: grab; text-align: left; }
+  .code-choice { max-width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: grab; text-align: left; touch-action: none; }
   .code-choice:active, .code-choice.dragging { cursor: grabbing; opacity: .55; }
   .code-choice.selected { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); }
   .code-choice code { overflow-x: auto; white-space: pre; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }

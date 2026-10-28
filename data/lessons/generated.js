@@ -139,4 +139,109 @@
       ];
     });
   });
+  // Related Python tools stay inside the lesson where learners will use them.
+  // This keeps the sidebar short while still giving each tool a runnable sample.
+  const addRelated = (id, sections) => {
+    const lesson = K.lessons[`python/${id}`];
+    if (!lesson) return;
+    const existingSections = lesson._relatedSections ? lesson.sections : (lesson.sections || []).slice(0, 1);
+    lesson.showAllSections = true;
+    lesson._relatedSections = true;
+    lesson.sections = [...existingSections, ...sections];
+  };
+  const related = (heading, code, explanation, tip) => ({ heading, code, annotations: [], explanation: [explanation], tip });
+
+  addRelated("variables-and-data-types", [
+    related("Type conversion: palitan ang type", "age_text = \"18\"\nage = int(age_text)\nprice = float(\"49.50\")\nmessage = str(age) + \" years old\"\nprint(message)", "int(), float(), at str() ay nagko-convert ng value sa kailangan mong type.", "Text galing input() by default, kaya madalas kailangan ng int() o float().")
+  ]);
+  addRelated("strings", [
+    related("String methods", "name = \"  kai dela cruz  \"\nprint(name.strip())\nprint(name.upper())\nprint(name.replace(\"kai\", \"Mia\"))", "strip() ay tanggal extra spaces; upper() ay uppercase; replace() ay nagpapalit ng text.", "String methods gumagawa ng bagong text; hindi nila binabago ang original string."),
+    related("String slicing", "word = \"Python\"\nprint(word[0:3])\nprint(word[-2:])\nprint(word[::-1])", "[start:end] ay kumukuha ng part ng text; negative index ay mula sa dulo; [::-1] ay reverse.", "Hindi kasama ang end index: word[0:3] ay Pyt.")
+  ]);
+  addRelated("lists-tuples-sets-and-dictionaries", [
+    related("List slicing at list comprehension", "numbers = [1, 2, 3, 4, 5]\nprint(numbers[1:4])\nsquares = [number ** 2 for number in numbers]\nprint(squares)", "List slicing ay kumukuha ng range ng items. List comprehension ay compact na paggawa ng bagong list.", "Sa numbers[1:4], index 1 hanggang 3 lang ang kukunin."),
+    related("Dictionary methods at dictionary comprehension", "profile = {\"name\": \"Mia\", \"score\": 90}\nprint(profile.get(\"name\"))\nprint(profile.keys())\nlabels = {number: f\"Item {number}\" for number in [1, 2, 3]}\nprint(labels)", "get() ay safe na kuha ng value; keys() ay listahan ng keys; dictionary comprehension ay gumagawa ng key-value pairs sa isang line.", "Gamitin ang get(key, default) kapag posibleng wala ang key."),
+    related("Set at tuple methods", "tags = {\"python\", \"beginner\"}\ntags.add(\"practice\")\ntags.discard(\"beginner\")\npoint = (10, 20)\nprint(point.count(10))", "add() ay dagdag sa set; discard() ay safe na tanggal; tuple.count() ay nagbibilang ng value.", "Set ay unique items lang; tuple ay fixed o hindi nababago.")
+  ]);
+  addRelated("operators", [
+    related("Operators sa actual condition", "score = 85\nis_passing = score >= 75 and score <= 100\nprint(is_passing)\nprint(score % 2 == 1)", "Comparison operators ay nagbabalik ng True/False; and/or ay pinagsasama ang conditions; % ay remainder.", "Gamitin ang parentheses kung gusto mong gawing mas klaro ang order ng checks.")
+  ]);
+  addRelated("conditional-statements", [
+    related("Nested if-else", "is_logged_in = True\nis_admin = False\nif is_logged_in:\n    if is_admin:\n        print(\"Admin panel\")\n    else:\n        print(\"User dashboard\")\nelse:\n    print(\"Please log in\")", "Nested if ay condition sa loob ng isa pang condition. Indentation ang nagsasabi kung aling block ang magkakasama.", "Gamitin lang kapag may dependent na second check; huwag sobrang lalim.")
+  ]);
+  addRelated("loops", [
+    related("Nested loops at range()", "for row in range(1, 3):\n    for column in range(1, 4):\n        print(row, column)", "range() ang nagbibigay ng numbers; nested loop ay loop sa loob ng loop para sa rows at columns.", "Bawat isang row ay tatakbo nang buo ang inner loop."),
+    related("enumerate() at zip()", "names = [\"Ana\", \"Ben\"]\nscores = [90, 85]\nfor index, name in enumerate(names, start=1):\n    print(index, name)\nfor name, score in zip(names, scores):\n    print(name, score)", "enumerate() ay may index at item. zip() ay pinapares ang items mula sa dalawang lists.", "Hihinto ang zip() sa mas maikling list.")
+  ]);
+  addRelated("functions", [
+    related("Built-in functions: len, max, min, sum", "scores = [88, 72, 95, 80]\nprint(len(scores))\nprint(max(scores))\nprint(min(scores))\nprint(sum(scores))", "len() ay bilang, max() pinakamataas, min() pinakamababa, at sum() ang total.", "Gamitin ang sum(scores) / len(scores) para sa average kapag hindi empty ang list."),
+    related("Lambda, *args, at **kwargs", "add = lambda first, second: first + second\ndef show(*items, **options):\n    print(items)\n    print(options)\nprint(add(2, 3))\nshow(\"Python\", \"Java\", level=\"beginner\")", "Lambda ay maliit na one-line function. *args ay maraming positional values; **kwargs ay named values.", "Mas readable pa rin ang def kapag mahaba o maraming logic ang function."),
+    related("map, filter, reduce, sorted, any, all", "from functools import reduce\nnumbers = [3, 1, 4, 2]\nprint(list(map(lambda number: number * 2, numbers)))\nprint(list(filter(lambda number: number > 2, numbers)))\nprint(reduce(lambda total, number: total + number, numbers))\nprint(sorted(numbers, reverse=True))\nprint(any(number > 3 for number in numbers))\nprint(all(number > 0 for number in numbers))", "map() transforms, filter() keeps matching values, reduce() combines values. sorted() returns a new sorted list; any/all check boolean conditions.", "Import reduce mula functools bago ito gamitin.")
+  ]);
+  addRelated("recursion", [
+    related("Recursion recap", "def factorial(number):\n    if number == 1:\n        return 1\n    return number * factorial(number - 1)\nprint(factorial(4))", "Recursion ay function na tumatawag sa sarili. Base case ang tumitigil sa tawag.", "Laging maglagay ng base case para hindi maging infinite recursion.")
+  ]);
+  addRelated("error-handling", [
+    related("Exception handling", "try:\n    age = int(input(\"Age: \"))\n    print(age + 1)\nexcept ValueError:\n    print(\"Number lang ang ilagay.\")\nfinally:\n    print(\"Done\")", "try ang risky code; except ang sasalo ng specific error; finally ay laging tatakbo.", "I-handle ang specific error tulad ng ValueError, hindi broad na except lang.")
+  ]);
+  addRelated("file-handling", [
+    related("File handling", "with open(\"notes.txt\", \"w\") as file:\n    file.write(\"Practice every day\")\nwith open(\"notes.txt\") as file:\n    print(file.read())", "with ang nagsasara ng file automatically. w ay write mode; default mode ay read.", "Gamitin ang a mode kung gusto mong magdagdag nang hindi binubura ang lumang content.")
+  ]);
+  addRelated("modules-and-packages", [
+    related("Virtual environment at pip", "# terminal\npython -m venv .venv\n# Windows: .venv\\Scripts\\activate\npip install requests\npip freeze > requirements.txt", "Virtual environment ay isolated na dependencies ng project. pip ang pang-install ng packages.", "I-activate ang .venv bago mag-install para project lang ang maapektuhan."),
+    related("Useful standard modules", "import json, random, math\nfrom datetime import datetime\nprint(json.dumps({\"name\": \"Mia\"}))\nprint(random.choice([\"red\", \"blue\"]))\nprint(math.sqrt(81))\nprint(datetime.now())", "json para data exchange, random para random values, math para calculations, at datetime para date/time.", "Standard library ang mga ito—walang pip install kailangan."),
+    related("re, os, at pathlib", "import os, re\nfrom pathlib import Path\nemail = \"mia@example.com\"\nprint(bool(re.fullmatch(r\"[^@]+@[^@]+\\.[^@]+\", email)))\nprint(os.getcwd())\npath = Path(\"notes.txt\")\nprint(path.exists())", "re ay regular expressions para sa pattern matching. os ay may OS-level helpers; pathlib ay modern way para humawak ng file paths.", "Gamitin ang pathlib para mas readable at cross-platform ang paths.")
+  ]);
+  addRelated("oop", [
+    related("Classes, objects, at constructor", "class Player:\n    def __init__(self, name, score=0):\n        self.name = name\n        self.score = score\nplayer = Player(\"Kai\")\nprint(player.name)", "Class ang blueprint; object ang actual instance. __init__() ang constructor na nagse-set ng starting data.", "self ay tumutukoy sa current object.") ,
+    related("Encapsulation", "class BankAccount:\n    def __init__(self, balance):\n        self.__balance = balance\n    def get_balance(self):\n        return self.__balance\naccount = BankAccount(500)\nprint(account.get_balance())", "Ang __balance ay private-style attribute. Method ang controlled na paraan para basahin ito.", "Sa Python, name mangling ito; convention pa rin ang responsible access.")
+  ]);
+  addRelated("advanced-oop", [
+    related("Inheritance, abstraction, at polymorphism", "from abc import ABC, abstractmethod\nclass Animal(ABC):\n    @abstractmethod\n    def speak(self): pass\nclass Dog(Animal):\n    def speak(self): return \"Woof\"\nprint(Dog().speak())", "Inheritance ay pagmana mula base class. Abstract method ay required contract. Polymorphism ay same method name, iba't ibang behavior.", "Gamitin ang base class kapag may shared contract ang related objects."),
+    related("Magic methods, isinstance, issubclass", "class Score:\n    def __init__(self, value): self.value = value\n    def __str__(self): return f\"Score: {self.value}\"\nitem = Score(95)\nprint(item)\nprint(isinstance(item, Score))\nprint(issubclass(bool, int))", "Magic methods gaya ng __str__() ay special behavior. isinstance() checks an object; issubclass() checks a class relationship.", "Ang bool ay subclass ng int sa Python, kaya True behaves like 1 sa ilang computations.")
+  ]);
+  addRelated("testing-and-debugging", [
+    related("Unit testing", "import unittest\ndef add(first, second): return first + second\nclass AddTest(unittest.TestCase):\n    def test_add(self):\n        self.assertEqual(add(2, 3), 5)\nif __name__ == \"__main__\":\n    unittest.main()", "Unit test ay automatic check ng maliit na behavior. assertEqual(expected, actual) ang nagko-compare ng result.", "Mag-test ng normal at edge cases, hindi happy path lang.")
+  ]);
+  addRelated("functions", [
+    related("Decorators, generators, at iterators", "def loud(function):\n    def wrapper(): return function().upper()\n    return wrapper\n@loud\ndef greet(): return \"hello\"\ndef count_up():\n    yield 1\n    yield 2\nprint(greet())\nprint(next(iter(count_up())))", "Decorator ay nagdadagdag ng behavior sa function. Generator na may yield ay nagbibigay ng values one at a time; iterator ang nagbibigay ng next value.", "Gamitin ang generator kapag hindi kailangan i-store lahat ng values agad.")
+  ]);
+  // Every lesson receives two quick coding drills, even when it has no custom exercise data.
+  // The challenges are derived from that lesson's own sample so Python and Java stay language-specific.
+  const pickPracticeToken = (source, language, seed) => {
+    const searchable = source.replace(/(["']).*?\1/g, " ");
+    const patterns = language === "java"
+      ? [/System\.out\.println/g, /\breturn\b/g, /\b(String|int|double|boolean)\b/g, /\b(if|else|for|while|class|static)\b/g, /\b[A-Za-z_$][\w$]*/g]
+      : [/\bprint\b/g, /\breturn\b/g, /\b(range|append|remove|sort|len|input)\b/g, /\b(if|elif|else|for|while|def|class)\b/g, /\b[A-Za-z_][\w]*/g];
+    const choices = [];
+    patterns.forEach(pattern => {
+      for (const match of searchable.matchAll(pattern)) {
+        if (!choices.includes(match[0]) && !["true", "false", "null", "True", "False", "None", "System", "out", "println"].includes(match[0])) choices.push(match[0]);
+      }
+    });
+    const number = [...`${language}:${seed}`].reduce((total, character) => total + character.charCodeAt(0), 0);
+    return choices.length ? choices[number % choices.length] : "";
+  };
+  const makeUniversalPractice = lesson => {
+    const source = (lesson.code || lesson.sections?.[0]?.code || "").split(/\r?\n/)
+      .filter(line => line.trim() && !line.trim().startsWith("#") && !line.trim().startsWith("//"))
+      .slice(0, 8)
+      .join("\n");
+    if (!source) return;
+    if (!lesson.reorder?.length) {
+      const lines = source.split("\n");
+      lesson.reorder = [{ lines: lines.slice(0, Math.min(lines.length, 5)), explanation: "Basahin ang flow: setup muna, saka process, tapos output." }];
+    }
+    if (!lesson.fillBlanks?.length) {
+      const token = pickPracticeToken(source, lesson.language, lesson.id);
+      if (!token) return;
+      lesson.fillBlanks = [{
+        code: source.replace(token, "____"),
+        answer: token,
+        hint: "Hanapin ang built-in function, keyword, o method na kailangan sa blank.",
+        explanation: `Ang missing code ay ${token}.`
+      }];
+    }
+  };
+  Object.values(K.lessons || {}).forEach(makeUniversalPractice);
 })(window.Kodigo = window.Kodigo || {});

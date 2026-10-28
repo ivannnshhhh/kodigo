@@ -57,6 +57,25 @@ p { max-width: 75ch; margin: 0; }
 .choice { display: flex; align-items: flex-start; gap: 10px; min-height: 44px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); cursor: pointer; }
 .choice input { margin-top: 6px; accent-color: var(--accent); }
 .line-sort-list { display: grid; gap: 8px; }
+  .drag-code-task { display: grid; gap: 12px; }
+  .code-drop-area { display: grid; gap: 2px; padding: 8px; background: var(--code-bg); font: 14px/1.7 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .code-starter-line { display: grid; grid-template-columns: 28px minmax(0, 1fr); min-height: 38px; padding: 5px 8px; border-radius: 5px; }
+  .code-starter-line { color: var(--text); }
+  .code-drop-slot { display: inline-flex; align-items: center; min-width: 52px; min-height: 26px; padding: 0 6px; border: 1px dashed var(--accent); border-radius: 4px; color: var(--text-muted); cursor: pointer; background: color-mix(in srgb, var(--accent) 10%, var(--code-bg)); vertical-align: baseline; }
+  .code-drop-slot.filled { border-style: solid; color: var(--text); background: var(--surface); }
+  .code-drop-slot.drag-over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+  .code-drop-slot.correct { border-color: var(--success); }
+  .code-drop-slot.incorrect { border-color: var(--danger); }
+  .drop-line-number { color: var(--text-muted); user-select: none; }
+  .code-choice-tray { display: flex; flex-wrap: wrap; gap: 8px; }
+  .code-choice { max-width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); color: var(--text); cursor: grab; text-align: left; }
+  .code-choice:active, .code-choice.dragging { cursor: grabbing; opacity: .55; }
+  .code-choice.selected { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 25%, transparent); }
+  .code-choice code { overflow-x: auto; white-space: pre; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .code-starter-line code { overflow-x: auto; white-space: pre; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  .drag-task-label { margin: 0; color: var(--text-muted); font-size: 14px; }
+  .sortable-line { cursor: grab; }
+  .sortable-line:active { cursor: grabbing; }
 .sortable-line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; padding: 7px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); touch-action: none; }
 .sortable-line code { min-width: 0; overflow-x: auto; white-space: pre; }
 .sortable-line.correct { border-color: var(--success); }
@@ -71,9 +90,15 @@ p { max-width: 75ch; margin: 0; }
 .test-case { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); }
 .test-case > label { display: grid; gap: 5px; }
 .test-result { overflow-wrap: anywhere; white-space: pre-wrap; }
+  .fill-blank-card { display: grid; gap: 10px; }
+  .fill-blank-card.correct .fill-blank-input { border-color: var(--success); }
 .code-challenge-list { display: grid; gap: 14px; margin: 0; padding-left: 22px; }
 .code-challenge-list li { padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--surface-2); }
 .code-challenge-list p { margin-top: 6px; }
+.mistakes-library { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; }
+.mistake-card { display: grid; gap: 6px; padding: 13px; border: 1px solid var(--border); border-left: 3px solid var(--danger); border-radius: var(--radius-sm); background: var(--surface-2); }
+.mistake-card p { color: var(--text-muted); font-size: 14px; }
+.mistake-fix { color: var(--success); font-weight: 700; }
 .lesson-roadmap { display: grid; gap: 10px; }
 .lesson-roadmap ol { display: grid; gap: 6px; margin: 0; padding-left: 22px; color: var(--text-muted); }
 .lesson-step { padding-top: var(--space-4); border-top: 1px solid var(--border); }

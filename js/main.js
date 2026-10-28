@@ -12,6 +12,7 @@ const { runCode, runPython } = K.features.runner;
 const { renderPredictions } = K.features.predictOutput;
 const { normalizeCode, renderDebug } = K.features.debugMode;
 const { renderReorder } = K.features.reorderLines;
+const { renderFillBlanks } = K.features.fillBlanks;
 const { renderMiniProject } = K.features.miniProject;
 const { renderChallenge, renderMemory, renderPlayground } = K.features.practice;
 const { replayAnimation } = K.features.animations;
@@ -47,7 +48,84 @@ function footer() {
 
 function renderChallenges(challenges = []) {
   if (!challenges.length) return "";
-  return `<section class="content-section panel" id="code-challenges"><div><span class="eyebrow">Hands-on practice</span><h2>Subukan mong ikaw ang magsulat</h2><p class="muted">Gamitin ang blank editor sa taas. Huwag muna silipin ang example habang sinusubukan mo.</p></div><ol class="code-challenge-list">${challenges.map(challenge => `<li><strong>${escapeHtml(challenge.title)}</strong><p>${escapeHtml(challenge.task)}</p><p class="muted"><strong>Check:</strong> ${escapeHtml(challenge.check)}</p></li>`).join("")}</ol></section>`;
+  return `<section class="content-section panel" id="code-challenges"><div><span class="eyebrow">Hands-on practice</span><h2>Code drills</h2><p class="muted">Try muna nang walang kopya, saka i-run at i-check ang output.</p></div><ol class="code-challenge-list">${challenges.slice(0, 2).map(challenge => `<li><strong>${escapeHtml(challenge.title)}</strong><p>${escapeHtml(challenge.task)}</p><p class="muted"><strong>Check:</strong> ${escapeHtml(challenge.check)}</p></li>`).join("")}</ol></section>`;
+}
+
+function commonMistakesFor(lesson) {
+  const library = {
+    "python:variables-and-data-types": ["Pinagdudugtong ang text at number", "Gamitin ang str(number) bago idugtong sa text."],
+    "python:input-and-output": ["Hindi kino-convert ang input", "input() ay text; gumamit ng int() o float() kapag number ang kailangan."],
+    "python:operators": ["Maling operator sa comparison", "Gamitin ang == para mag-compare; = ay para mag-assign."],
+    "python:conditional-statements": ["Walang colon o mali ang indentation", "Tapusin ang if/elif/else sa : at i-indent ang body."],
+    "python:loops": ["Off-by-one sa range", "Tandaan: hindi kasama ang stop value ng range()."],
+    "python:strings": ["Maling quote o string index", "I-pares ang quotes at tandaan na nagsisimula sa 0 ang index."],
+    "python:list-methods": ["Ina-assume na may item sa list", "I-check muna bago mag-remove() o gumamit ng valid index."],
+    "python:lists-tuples-sets-and-dictionaries": ["Maling collection para sa task", "List para sa order, set para unique values, dictionary para key-value pairs."],
+    "python:functions": ["Nakalimutan ang return", "Gamitin ang return kapag kailangang gamitin sa ibang line ang result."],
+    "python:error-handling": ["Sinasalo ang lahat gamit ang bare except", "Hulihin ang specific exception para hindi maitago ang ibang bug."],
+    "python:file-handling": ["Hindi sinasara ang file", "Gumamit ng with open(...) para automatic itong maisara."],
+    "python:modules-and-packages": ["Maling import path", "I-check ang module name, folder structure, at __init__.py kung package ito."],
+    "python:oop": ["Nakalimutan ang self", "Unang parameter ng instance method ay self."],
+    "python:recursion": ["Walang base case", "Maglagay ng condition na magpapahinto sa recursive calls."],
+    "python:searching-and-sorting": ["Hindi sorted ang binary-search input", "I-sort muna ang data bago gumamit ng binary search."],
+    "python:basic-dsa": ["Maling structure ang pinili", "Piliin ang list, stack, queue, o dictionary ayon sa access na kailangan."],
+    "python:sql-and-database-programming": ["SQL string concatenation", "Gumamit ng parameterized query para iwas SQL injection."],
+    "python:git-and-github": ["Nagco-commit ng secret files", "Ilagay ang .env at credentials sa .gitignore."],
+    "python:advanced-oop": ["Inheritance na hindi kailangan", "Gamitin ang composition kapag has-a relationship ang mas tama."],
+    "python:advanced-dsa": ["Hindi iniisip ang complexity", "I-compare ang time at memory cost bago pumili ng algorithm."],
+    "python:gui-or-web-development": ["Blocking work sa UI thread", "Ilagay ang mabigat na task sa background para hindi mag-freeze ang interface."],
+    "python:testing-and-debugging": ["Happy path lang ang tine-test", "Magdagdag ng empty, invalid, at boundary test cases."],
+    "python:apis-and-automation": ["Walang timeout o status check", "Mag-set ng timeout at i-check ang HTTP status bago gamitin ang response."],
+    "python:ai-computer-vision-or-data-analysis": ["Train at test data leakage", "Ihiwalay ang test set bago mag-train o mag-transform ng data."],
+    "java:java-fundamentals": ["Maling declared type o String case", "I-match ang type sa value at gamitin ang capital S sa String."],
+    "java:operators": ["Gumamit ng == sa String", "Gamitin ang .equals() para ihambing ang String content."],
+    "java:conditional-statements": ["Assignment ang nailagay sa condition", "Gumamit ng == para comparison at i-test ang parehong branches."],
+    "java:loops": ["Maling loop boundary", "I-check kung < o <= ang kailangan para hindi lumampas ang index."],
+    "java:strings": ["Ina-assume na mutable ang String", "Gumawa ng bagong String o gumamit ng StringBuilder para sa maraming edits."],
+    "java:arrays": ["Lumampas sa array length", "Valid lang ang index mula 0 hanggang length - 1."],
+    "java:methods": ["Hindi tugma ang return type", "Ibalik ang value na tugma sa declared method type."],
+    "java:oop": ["Direct access sa fields", "Gawing private ang fields at gumamit ng methods kapag kailangan."],
+    "java:exception-handling": ["Empty catch block", "I-handle, i-log, o i-rethrow ang error; huwag itong itago."],
+    "java:collections-framework": ["Primitive sa generics", "Gamitin ang wrapper tulad ng Integer, hindi int, sa List."],
+    "java:file-handling": ["Hindi kino-close ang reader/writer", "Gumamit ng try-with-resources para automatic cleanup."],
+    "java:generics": ["Raw type ang gamit", "Ilagay ang type parameter, gaya ng List<String>."],
+    "java:data-structures-and-algorithms": ["Maling Big-O assumption", "Sukatin ang operations at piliin ang structure ayon sa lookup/insert need."],
+    "java:sql-at-jdbc": ["Hindi sinasarang JDBC resources", "Isara ang Connection, Statement, at ResultSet gamit ang try-with-resources."],
+    "java:git-and-github": ["Nagpo-push nang hindi nagpu-pull", "Kumuha muna ng latest changes at ayusin ang conflicts bago mag-push."],
+    "java:multithreading": ["Shared data na walang synchronization", "Protektahan ang shared state o gumamit ng concurrent utilities."],
+    "java:modern-java-features": ["May side effects sa stream", "Iwasan ang pag-mutate ng external state sa stream pipeline."],
+    "java:unit-testing": ["Tests na magkaka-depend", "Bawat test ay dapat independent at may sariling setup."],
+    "java:gui-programming": ["UI update mula sa wrong thread", "I-update ang UI sa tamang event-dispatch thread."],
+    "java:spring-boot": ["Business logic sa controller", "Ihiwalay ang controller, service, at repository responsibilities."],
+    "java:software-design-patterns": ["Pattern para lang gumamit ng pattern", "Piliin lang ang pattern kapag nilulutas nito ang actual na design problem."],
+    "java:jvm-and-memory-management": ["Memory leak dahil sa retained references", "Alisin ang hindi na kailangan na references at i-profile ang app kung tumataas ang memory."]
+  };
+  const topic = library[`${lesson.language}:${lesson.id}`] || ["Hindi binabasa ang error message", "Tingnan ang unang line number at ayusin muna ang unang error."];
+  const id = lesson.id;
+  const family = ["conditional-statements", "loops", "recursion"].includes(id) ? "control"
+    : ["variables-and-data-types", "operators", "strings", "list-methods", "lists-tuples-sets-and-dictionaries", "arrays", "collections-framework", "generics", "basic-dsa", "advanced-dsa", "data-structures-and-algorithms"].includes(id) ? "data"
+    : ["input-and-output", "file-handling", "sql-and-database-programming", "sql-at-jdbc", "apis-and-automation"].includes(id) ? "io"
+    : ["functions", "methods", "oop", "advanced-oop", "software-design-patterns", "jvm-and-memory-management", "multithreading"].includes(id) ? "design"
+    : "workflow";
+  const support = lesson.language === "python" ? {
+    control: [["Hindi tine-test ang edge case", "Subukan ang boundary values gaya ng 0, empty input, at huling item."], ["Nagbabago ang condition nang hindi sinasadya", "I-print o i-trace ang values kada step bago mag-refactor."]],
+    data: [["Maling type ang inaasahan", "Gamitin ang type() o i-print ang value habang nagde-debug."], ["Binabago ang data nang hindi sinasadya", "Gumawa ng copy kung kailangan ang original collection o value."]],
+    io: [["Hindi vina-validate ang external input", "I-check ang input, file path, response, o query result bago gamitin."], ["Walang error path", "Mag-handle ng missing file, bad input, connection error, o empty response."]],
+    design: [["Sobrang daming ginagawa ng isang function/class", "Hatiin ang code sa maliit at malinaw na responsibility."], ["Hindi malinaw ang pangalan", "Gumamit ng descriptive names para sa values, parameters, at methods."]],
+    workflow: [["Malaking pagbabago agad ang ginagawa", "Magbago ng isang maliit na part at i-test bago magpatuloy."], ["Walang reproducible check", "Maghanda ng maliit na example o test na nagpapakita ng expected result."]]
+  } : {
+    control: [["Hindi tine-test ang edge case", "Subukan ang boundary values gaya ng 0, empty input, at huling item."], ["Maling scope ng braces", "I-indent at i-pares ang braces para malinaw kung anong block ang tatakbo."]],
+    data: [["Null o empty data ang hindi chine-check", "I-validate ang object, collection, at array length bago gamitin."], ["Maling equality check", "Para sa objects gaya ng String, gamitin ang .equals() kung content ang ikinukumpara."]],
+    io: [["Hindi vina-validate ang external input", "I-check ang input, file path, query result, o response bago gamitin."], ["Hindi nalilinis ang resources", "Gumamit ng try-with-resources para sa files, streams, at database objects."]],
+    design: [["Sobrang daming ginagawa ng isang class", "Hatiin ang responsibilities sa malinaw na classes o methods."], ["Leaking mutable state", "Iwasang mag-expose ng mutable fields; gumamit ng controlled methods o copies."]],
+    workflow: [["Malaking pagbabago agad ang ginagawa", "Magbago ng isang maliit na part at i-test bago magpatuloy."], ["Walang reproducible check", "Maghanda ng maliit na example o unit test na may expected result."]]
+  };
+  return [{ mistake: topic[0], fix: topic[1] }, ...support[family].map(([mistake, fix]) => ({ mistake, fix }))];
+}
+
+function renderCommonMistakes(lesson) {
+  const mistakes = commonMistakesFor(lesson);
+  return `<section class="content-section panel" id="common-mistakes"><div><span class="eyebrow">Common Mistakes Library</span><h2>Mga karaniwang mali sa ${escapeHtml(lesson.title)}</h2><p class="muted">Gamitin ito bilang mabilis na checklist kapag may error o hindi tugma ang output.</p></div><div class="mistakes-library">${mistakes.map(item => `<article class="mistake-card"><strong>${escapeHtml(item.mistake)}</strong><p><span class="mistake-fix">Ayos:</span> ${escapeHtml(item.fix)}</p></article>`).join("")}</div></section>`;
 }
 
 function explainLine(line, language, annotations, lineNumber) {
@@ -211,34 +289,35 @@ function lessonMarkup(lesson) {
   const baseCode = lesson.code || lesson.sections?.[0]?.code || "";
   const codeMarkup = renderCode(baseCode, lesson.annotations);
   const concepts = hasSections
-    ? lesson.sections.map((section, index) => {
+    ? lesson.sections.slice(0, lesson.showAllSections ? undefined : 2).map((section, index) => {
       const isNewExample = index === 0 || section.code !== baseCode;
       const codeBlock = isNewExample ? `<div class="code-frame"><div class="code-scroll"><pre class="code-lines">${renderCode(section.code, section.annotations)}</pre></div></div>${renderLineByLine(section.code, lesson.language, section.annotations)}` : "";
       return `<section class="content-section lesson-step" id="concept-${index + 1}"><div><span class="eyebrow">Step ${index + 1}</span><h2>${escapeHtml(section.heading)}</h2></div>${codeBlock}<div class="concept-explanation">${(section.explanation || []).map(line => `<p>${escapeHtml(line)}</p>`).join("")}</div>${section.whereUsed ? `<p class="annotation-note"><strong>Saan ginagamit?</strong> ${escapeHtml(section.whereUsed)}</p>` : ""}${section.tip ? `<p class="muted"><strong>Tandaan:</strong> ${escapeHtml(section.tip)}</p>` : ""}</section>`;
     }).join("")
     : `<section class="content-section" id="annotated-code"><div class="section-head"><div><span class="eyebrow">Code muna</span><h2>Basahin ang code</h2></div><span class="language-tag">${lesson.language}</span></div><div class="code-frame"><div class="code-scroll"><pre class="code-lines" id="lesson-code">${codeMarkup}</pre></div></div><div class="annotation-note" id="annotation-output" aria-live="polite">Pindutin o i-focus ang may dotted underline para sa paliwanag.</div></section>`;
   const toc = hasSections
-    ? lesson.sections.slice(0, 8).map((section, index) => `<a href="#concept-${index + 1}">${escapeHtml(section.heading)}</a>`).join("")
+    ? lesson.sections.slice(0, lesson.showAllSections ? undefined : 2).map((section, index) => `<a href="#concept-${index + 1}">${escapeHtml(section.heading)}</a>`).join("")
     : '<a href="#annotated-code">Code</a>';
   const previousLink = previous
     ? `<a class="button" href="#/${lesson.language}/${previous.id}">Previous: ${escapeHtml(previous.title)}</a>`
     : `<a class="button" href="#/${lesson.language}/history">Previous: History</a>`;
   return `<div class="lesson-layout"><article class="lesson-content"><header class="lesson-heading"><div class="eyebrow">${curriculum[lesson.language].name} - ${topic.n} / ${topics.length}</div><h1>${escapeHtml(lesson.title)}</h1><p class="muted">${escapeHtml(lesson.summary)}</p></header>
     ${lesson.hook ? `<p class="hero-copy">${escapeHtml(lesson.hook)}</p>` : ""}
-    <section class="lesson-roadmap panel"><span class="eyebrow">Lesson flow</span><ol><li>Basahin ang main code at line-by-line explanation.</li><li>Unawain ang key concepts at rules.</li><li>Gawin ang coding challenges.</li><li>Isulat ang sariling solution at tapusin ang mini project.</li></ol></section>
+    <section class="lesson-roadmap panel"><span class="eyebrow">Code-first flow</span><ol><li>Tingnan ang pattern at maikling meaning nito.</li><li>Palitan ang values o rule sa sample.</li><li>I-test ang sariling solution at ayusin kapag may error.</li></ol></section>
     ${concepts}
     ${renderChallenges(lesson.challenges)}
     ${renderChallenge(lesson, topic)}
     ${renderMemory(lesson)}
     ${renderPlayground(lesson)}
-    <section class="content-section panel" id="try-code"><div><span class="eyebrow">I-try mo</span><h2>Isulat at i-run ang sarili mong code</h2><p class="muted">Blank muna ang editor para ikaw ang gumawa ng actual solution. ${lesson.language === "java" ? copy.javaRunnerNotice : "Tatagaload ang Python runtime sa unang run; kailangan ng internet."}</p></div><label for="lesson-editor">Code editor</label><textarea id="lesson-editor" class="editor" spellcheck="false" placeholder="# Isulat ang code mo dito..."></textarea><div class="button-row"><button class="button primary" data-action="run-code">Run</button><button class="button" data-action="retry-code" hidden>Retry</button><button class="button" data-action="reset-code">Clear</button><button class="button" data-action="copy-editor">Copy</button></div><p class="muted" id="run-note" aria-live="polite"></p><div class="section-head"><h3>Output</h3><span class="muted" id="run-status" aria-live="polite"></span></div><pre class="output-box" id="run-output" aria-live="polite">Ready kapag ikaw na.</pre></section>
+    <section class="content-section panel" id="try-code"><div><span class="eyebrow">Practice lab</span><h2>Ikaw ang magsulat</h2><p class="muted">Mag-load ng sample kung kailangan, then baguhin ito para maging sarili mong solution. ${lesson.language === "java" ? copy.javaRunnerNotice : "Maglo-load ang Python runtime sa unang run; kailangan ng internet."}</p></div><label for="lesson-editor">Code editor</label><textarea id="lesson-editor" class="editor" spellcheck="false" placeholder="# Isulat ang code mo dito..."></textarea><div class="button-row"><button class="button" data-action="load-example">Load sample</button><button class="button primary" data-action="run-code">Run code</button><button class="button" data-action="retry-code" hidden>Retry</button><button class="button" data-action="reset-code">Clear</button><button class="button" data-action="copy-editor">Copy</button></div><p class="muted" id="run-note" aria-live="polite"></p><div class="section-head"><h3>Output</h3><span class="muted" id="run-status" aria-live="polite"></span></div><pre class="output-box" id="run-output" aria-live="polite">Ready kapag ikaw na.</pre></section>
     ${renderMiniProject(lesson.miniProject)}
-    ${renderPredictions(lesson.predict)}${renderDebug(lesson.debug)}${renderReorder(lesson.reorder)}
+    ${renderPredictions(lesson.predict)}${renderDebug(lesson.debug)}${renderReorder(lesson.reorder, lesson)}${renderFillBlanks(lesson.fillBlanks)}
+    ${renderCommonMistakes(lesson)}
     ${lesson.animation ? `<section class="content-section panel"><div><span class="eyebrow">Visual</span><h2>${lesson.animation === "loop" ? "Loop animation" : "Variable animation"}</h2></div><div class="animation-stage" id="animation-stage" aria-live="polite"></div><button class="button" data-action="replay-animation">Play / Replay</button></section>` : ""}
     ${renderKodigoCard(lesson.kodigoCard, getPins())}
     <section class="content-section panel"><div class="section-head"><div><span class="eyebrow">Progress</span><h2>Markahan ang lesson</h2></div>${done ? "<span class=badge>Complete</span>" : ""}</div><button class="button primary" data-action="complete-lesson" ${done ? "disabled" : ""}>${done ? "Completed" : "Mark as complete"}</button></section>
     <nav class="lesson-bottom-nav" aria-label="Lesson navigation">${previousLink}${next ? `<a class="button primary" href="#/${lesson.language}/${next.id}">Next: ${escapeHtml(next.title)}</a>` : `<button class="button" type="button" disabled>Next</button>`}</nav>${footer()}</article>
-    <aside class="lesson-toc panel"><h3>On this page</h3><nav>${toc}<a href="#coding-challenge">Coding challenge</a><a href="#memory-visualization">Memory visualization</a><a href="#test-case-playground">Test case playground</a><a href="#try-code">I-try mo</a>${lesson.predict?.length ? '<a href="#predict-output">Hulaan ang output</a>' : ""}${lesson.debug?.length ? '<a href="#debug-mode">Sirang code</a>' : ""}<a href="#kodigo-card">Kodigo card</a></nav></aside></div>`;
+    <aside class="lesson-toc panel"><h3>On this page</h3><nav>${toc}<a href="#coding-challenge">Coding challenge</a><a href="#memory-visualization">Memory visualization</a><a href="#test-case-playground">Test case playground</a><a href="#try-code">I-try mo</a>${lesson.predict?.length ? '<a href="#predict-output">Hulaan ang output</a>' : ""}${lesson.debug?.length ? '<a href="#debug-mode">Sirang code</a>' : ""}<a href="#reorder-lines">Drag-and-Drop Coding</a><a href="#common-mistakes">Common Mistakes</a><a href="#fill-in-the-blank">Fill in the blank</a><a href="#kodigo-card">Kodigo card</a></nav></aside></div>`;
 }
 
 async function render() {
@@ -486,6 +565,19 @@ async function handleClick(event) {
     else navigate(`${language}/history`);
     return;
   }
+  const codeChoice = event.target.closest(".code-choice");
+  if (codeChoice) {
+    const task = codeChoice.closest("[data-reorder]");
+    task.querySelectorAll(".code-choice.selected").forEach(choice => choice.classList.remove("selected"));
+    codeChoice.classList.add("selected");
+    return;
+  }
+  const codeSlot = event.target.closest(".code-drop-slot");
+  if (codeSlot) {
+    const choice = codeSlot.closest("[data-reorder]").querySelector(".code-choice.selected");
+    if (choice) placeCodeChoice(codeSlot, choice);
+    return;
+  }
   const target = event.target.closest("[data-action]");
   if (!target) {
     const annotation = event.target.closest(".annotated");
@@ -641,6 +733,15 @@ async function handleClick(event) {
     document.querySelector("#run-note").textContent = result.note || "";
     document.querySelector('[data-action="retry-code"]').hidden = !result.retryable;
   }
+  if (action === "load-example") {
+    const editor = document.querySelector("#lesson-editor");
+    const sample = activeLesson.editable?.starter || activeLesson.code || activeLesson.sections?.[0]?.code || "";
+    editor.value = sample;
+    editor.focus();
+    document.querySelector("#run-output").textContent = "Sample loaded. Palitan ang isang value o rule, then i-run mo.";
+    document.querySelector("#run-output").classList.remove("error");
+    return;
+  }
   if (action === "reset-code") { document.querySelector("#lesson-editor").value = ""; document.querySelector("#run-output").textContent = "Ready kapag ikaw na."; document.querySelector("#run-output").classList.remove("error"); }
   if (action === "copy-editor") await copyText(document.querySelector("#lesson-editor").value);
   if (action === "check-predict") {
@@ -667,10 +768,21 @@ async function handleClick(event) {
     if (solved) { const progress = getProgress(); progress.badges = [...new Set([...(progress.badges || []), copy.badges[2]])]; saveProgress(progress); }
   }
   if (action === "check-reorder") {
-    const index = Number(target.dataset.index); const task = activeLesson.reorder[index]; const expected = task.lines; const lines = [...target.closest("[data-reorder]").querySelectorAll(".sortable-line")];
-    const isCorrect = lines.every((line, lineIndex) => line.querySelector("code").textContent === expected[lineIndex]);
-    lines.forEach((line, lineIndex) => { line.classList.toggle("correct", line.querySelector("code").textContent === expected[lineIndex]); line.classList.toggle("incorrect", line.querySelector("code").textContent !== expected[lineIndex]); });
+    const index = Number(target.dataset.index); const task = activeLesson.reorder?.[index] || { explanation: "Nabuo ang code mula sa starter at missing lines." };
+    const slots = [...target.closest("[data-reorder]").querySelectorAll(".code-drop-slot")];
+    const isCorrect = slots.length > 0 && slots.every(slot => slot.dataset.line === slot.dataset.expectedLine);
+    slots.forEach(slot => { slot.classList.toggle("correct", slot.dataset.line === slot.dataset.expectedLine); slot.classList.toggle("incorrect", Boolean(slot.dataset.line) && slot.dataset.line !== slot.dataset.expectedLine); });
     const feedback = document.querySelector(`#reorder-feedback-${index}`); feedback.hidden = false; feedback.className = `feedback ${isCorrect ? "success" : "error"}`; feedback.textContent = isCorrect ? `${copy.correct} ${task.explanation}` : copy.wrong;
+  }
+  if (action === "reset-reorder") { resetReorderTask(target.closest("[data-reorder]")); return; }
+  if (action === "check-fill-blank") {
+    const index = Number(target.dataset.index); const task = activeLesson.fillBlanks[index];
+    const input = document.querySelector(`#fill-blank-answer-${index}`); const feedback = document.querySelector(`#fill-blank-feedback-${index}`);
+    const correct = normalizeCode(input.value) === normalizeCode(task.answer);
+    feedback.hidden = false; feedback.className = `feedback ${correct ? "success" : "error"}`;
+    feedback.textContent = correct ? `${copy.correct} ${task.explanation}` : `${copy.wrong} Hint: ${task.hint}`;
+    if (correct) input.closest("[data-fill-blank]").classList.add("correct");
+    return;
   }
   if (action === "line-up" || action === "line-down") {
     const row = target.closest(".sortable-line"); const list = row.parentElement;
@@ -713,6 +825,30 @@ function updateLineLabels(list) {
   });
 }
 
+function placeCodeChoice(slot, choice) {
+  const task = slot.closest("[data-reorder]");
+  const previous = slot.dataset.choiceId;
+  if (previous !== undefined) task.querySelector(`[data-code-choice="${previous}"]`)?.removeAttribute("hidden");
+  slot.dataset.choiceId = choice.dataset.codeChoice;
+  slot.dataset.line = choice.dataset.line;
+  slot.textContent = choice.dataset.line;
+  slot.classList.add("filled");
+  choice.hidden = true;
+  task.querySelectorAll(".code-choice.selected").forEach(item => item.classList.remove("selected"));
+}
+
+function resetReorderTask(task) {
+  task.querySelectorAll(".code-choice").forEach(choice => { choice.hidden = false; choice.classList.remove("selected"); });
+  task.querySelectorAll(".code-drop-slot").forEach(slot => {
+    delete slot.dataset.choiceId;
+    delete slot.dataset.line;
+    slot.textContent = "___";
+    slot.classList.remove("filled", "correct", "incorrect");
+  });
+  const feedback = task.querySelector(".feedback");
+  if (feedback) feedback.hidden = true;
+}
+
 function enablePointerSorting(event) {
   const row = event.target.closest(".sortable-line");
   if (!row || event.target.closest("button")) return;
@@ -749,6 +885,31 @@ document.addEventListener("change", event => {
 });
 document.addEventListener("submit", handleSubmit);
 document.addEventListener("pointerdown", enablePointerSorting);
+document.addEventListener("dragstart", event => {
+  const choice = event.target.closest(".code-choice");
+  if (!choice) return;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", choice.dataset.codeChoice);
+  choice.classList.add("dragging");
+});
+document.addEventListener("dragend", event => event.target.closest(".code-choice")?.classList.remove("dragging"));
+document.addEventListener("dragover", event => {
+  const slot = event.target.closest(".code-drop-slot");
+  if (!slot) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  slot.classList.add("drag-over");
+});
+document.addEventListener("dragleave", event => event.target.closest(".code-drop-slot")?.classList.remove("drag-over"));
+document.addEventListener("drop", event => {
+  const slot = event.target.closest(".code-drop-slot");
+  if (!slot) return;
+  event.preventDefault();
+  slot.classList.remove("drag-over");
+  const choiceId = event.dataTransfer.getData("text/plain");
+  const choice = slot.closest("[data-reorder]").querySelector(`[data-code-choice="${choiceId}"]`);
+  if (choice) placeCodeChoice(slot, choice);
+});
 document.addEventListener("focusin", event => { const annotation = event.target.closest(".annotated"); if (annotation) showTooltip(annotation); });
 document.addEventListener("keydown", event => {
   const languageTab = event.target.closest?.('[role="radio"][data-nav-lang]');

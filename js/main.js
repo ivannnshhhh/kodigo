@@ -44,12 +44,14 @@ function renderNav(route, state) {
 }
 
 function footer() {
-  return `<footer class="site-footer"><span>${copy.tagline}</span><span>Developed by Nielagang Itlog · Python at Java</span></footer>`;
+  return `<footer class="site-footer"><span>${K.i18n.t("footerCredit")}</span></footer>`;
 }
 
 function renderChallenges(challenges = []) {
   if (!challenges.length) return "";
-  return `<section class="content-section panel" id="code-challenges"><div><span class="eyebrow">Hands-on practice</span><h2>Code drills</h2><p class="muted">Try muna nang walang kopya, saka i-run at i-check ang output.</p></div><ol class="code-challenge-list">${challenges.slice(0, 2).map(challenge => `<li><strong>${escapeHtml(challenge.title)}</strong><p>${escapeHtml(challenge.task)}</p><p class="muted"><strong>Check:</strong> ${escapeHtml(challenge.check)}</p></li>`).join("")}</ol></section>`;
+  const english = K.i18n.language === "en";
+  const text = (value, fallback) => K.i18n.lessonText(value, fallback);
+  return `<section class="content-section panel" id="code-challenges"><div><span class="eyebrow">${K.i18n.t("handsOn")}</span><h2>${english ? "Code drills" : "Code drills"}</h2><p class="muted">${english ? "Try each task without copying, then run your code and check the output." : "Subukan muna nang walang kopya, saka i-run at i-check ang output."}</p></div><ol class="code-challenge-list">${challenges.slice(0, 2).map(challenge => `<li><strong>${escapeHtml(text(challenge.title, "Practice task"))}</strong><p>${escapeHtml(text(challenge.task, "Apply the lesson concept in your own code."))}</p><p class="muted"><strong>${english ? "Check:" : "Check:"}</strong> ${escapeHtml(text(challenge.check, "Run the code and compare its output with the expected result."))}</p></li>`).join("")}</ol></section>`;
 }
 
 function commonMistakesFor(lesson) {
@@ -131,26 +133,30 @@ function renderCommonMistakes(lesson) {
 
 function explainLine(line, language, annotations, lineNumber) {
   const note = annotations?.find(item => item.line === lineNumber);
-  if (note?.text) return note.text;
+  if (note?.text) return K.i18n.lessonText(note.text, "This note explains the highlighted part of the code.");
+  const english = K.i18n.language === "en";
   const trimmed = line.trim();
-  if (!trimmed) return "Blank line ito para paghiwalayin ang magkakaugnay na bahagi ng code at gawing mas madaling basahin.";
-  if (trimmed.startsWith("#") || trimmed.startsWith("//")) return "Comment ito para sa reader ng code; hindi ito ine-execute ng program.";
-  if (/^(if|elif|else|for|while|switch|case)\b/.test(trimmed)) return "Control-flow line ito: nagse-set ito ng condition o pag-uulit na susundin ng program.";
-  if (/^(def|class|public|private|static)\b/.test(trimmed)) return "Definition line ito: dito ginagawa ang reusable function, method, class, o behavior na tatawagin sa ibang part ng program.";
-  if (/^(print|System\.out\.println)\b/.test(trimmed)) return "Output line ito: ipinapakita nito sa console ang value o message para makita ng user ang result.";
-  if (/\b(return|yield)\b/.test(trimmed)) return "Ibinabalik ng line na ito ang result mula sa function/method papunta sa code na tumawag dito.";
-  if (trimmed.includes("=")) return language === "python" ? "Assignment o update ito: ang nasa kanan ang kino-compute, tapos sine-save sa variable na nasa kaliwa—parang nilalagyan o pinapalitan ang laman ng labeled box." : "May value na dine-declare o ina-assign dito. Sa Java, ang type ay nagsasabi kung anong klaseng value ang puwedeng itago ng variable.";
-  if (/\w+\(/.test(trimmed)) return "Method/function call ito: may existing na instruction na pinapatakbo gamit ang values na nasa parentheses.";
-  return "Bahagi ito ng current block. Basahin ito kasama ng lines sa paligid para makita kung paano nito tinutuloy ang flow ng program.";
+  if (!trimmed) return english ? "This blank line separates related parts of the code and makes it easier to read." : "Blank line ito para paghiwalayin ang magkakaugnay na bahagi ng code at gawing mas madaling basahin.";
+  if (trimmed.startsWith("#") || trimmed.startsWith("//")) return english ? "This is a comment for the reader; the program does not run it." : "Comment ito para sa reader ng code; hindi ito ine-execute ng program.";
+  if (/^(if|elif|else|for|while|switch|case)\b/.test(trimmed)) return english ? "This control-flow line sets a condition or repetition rule for the program." : "Control-flow line ito: nagse-set ito ng condition o pag-uulit na susundin ng program.";
+  if (/^(def|class|public|private|static)\b/.test(trimmed)) return english ? "This definition creates a reusable function, method, class, or behavior for another part of the program to use." : "Definition line ito: dito ginagawa ang reusable function, method, class, o behavior na tatawagin sa ibang part ng program.";
+  if (/^(print|System\.out\.println)\b/.test(trimmed)) return english ? "This output line displays a value or message in the console." : "Output line ito: ipinapakita nito sa console ang value o message para makita ng user ang result.";
+  if (/\b(return|yield)\b/.test(trimmed)) return english ? "This line sends a result from the function or method back to the code that called it." : "Ibinabalik ng line na ito ang result mula sa function/method papunta sa code na tumawag dito.";
+  if (trimmed.includes("=")) return english
+    ? language === "python" ? "This assignment or update computes the value on the right and stores it in the variable on the left." : "This line declares or assigns a value. In Java, the type tells you what kind of value the variable can store."
+    : language === "python" ? "Assignment o update ito: ang nasa kanan ang kino-compute, tapos sine-save sa variable na nasa kaliwa—parang nilalagyan o pinapalitan ang laman ng labeled box." : "May value na dine-declare o ina-assign dito. Sa Java, ang type ay nagsasabi kung anong klaseng value ang puwedeng itago ng variable.";
+  if (/\w+\(/.test(trimmed)) return english ? "This calls an existing function or method with the values inside the parentheses." : "Method/function call ito: may existing na instruction na pinapatakbo gamit ang values na nasa parentheses.";
+  return english ? "Read this line with the surrounding code to see how it continues the program's flow." : "Bahagi ito ng current block. Basahin ito kasama ng lines sa paligid para makita kung paano nito tinutuloy ang flow ng program.";
 }
 
 function renderLineByLine(code, language, annotations = []) {
-  return `<details class="line-by-line" open><summary>Line-by-line explanation</summary><ol>${String(code).split("\n").map((line, index) => `<li><code>${escapeHtml(line || "(blank line)")}</code><span>${escapeHtml(explainLine(line, language, annotations, index + 1))}</span></li>`).join("")}</ol></details>`;
+  const title = K.i18n.language === "en" ? "Line-by-line explanation" : "Paliwanag sa bawat line";
+  return `<details class="line-by-line" open><summary>${title}</summary><ol>${String(code).split("\n").map((line, index) => `<li><code>${escapeHtml(line || "(blank line)")}</code><span>${escapeHtml(explainLine(line, language, annotations, index + 1))}</span></li>`).join("")}</ol></details>`;
 }
 
 function homePage() {
   const comingSoon = ["HTML", "CSS", "JavaScript"].map(language => `<button class="course-preview" type="button" data-action="unavailable-course" data-course="${language}"><strong>${language}</strong><span>Lesson coming soon</span></button>`).join("");
-  return `<article class="landing-page"><section class="home-hero"><p class="eyebrow">${copy.tagline}</p><h1 class="wordmark hero-wordmark" aria-label="Kodigo">kodigo<span aria-hidden="true">_</span></h1><h2>Learn code one clear step at a time.</h2><p class="hero-copy">Explore lessons with real code, clear explanations, guided practice, and small projects. Choose Python or Java from the navigation bar to begin.</p></section><section class="landing-features" aria-label="Why Kodigo"><article class="panel"><span class="eyebrow">01 · Read</span><h2>See how code works</h2><p class="muted">Each lesson connects syntax to its purpose, so every line has a reason for being there.</p></article><article class="panel"><span class="eyebrow">02 · Understand</span><h2>Build solid foundations</h2><p class="muted">Topics cover concepts, syntax rules, common mistakes, and how each skill is used in applications.</p></article><article class="panel"><span class="eyebrow">03 · Practice</span><h2>Write your own code</h2><p class="muted">Use the empty editor, solve practice prompts, and apply each idea through a guided mini project.</p></article></section><section class="landing-path panel"><span class="eyebrow">Learning path</span><h2>From first variable to real applications.</h2><ol><li><strong>Beginner:</strong> syntax, variables, data types, decisions, loops, collections, and functions.</li><li><strong>Intermediate:</strong> files, OOP, algorithms, databases, Git, and code organization.</li><li><strong>Advanced:</strong> testing, APIs, concurrency, web or GUI applications, performance, and software design.</li></ol><p class="muted">Take one topic at a time: read the example, write your own variation, then move forward once you can explain what the code does.</p></section><section class="landing-guide"><div><span class="eyebrow">Getting started</span><h2>A simple way to study</h2><p class="muted">Choose a language from the navigation bar, select a lesson from its sidebar, review the example, and then write a solution in the practice editor. Errors are part of programming; reading the message and testing one small change at a time are useful debugging habits.</p><p class="muted">Kodigo is developed by <strong>Nielagang Itlog</strong>.</p></div><div class="panel"><h3>A useful reminder</h3><p class="muted">Programming is not memorizing commands. It is learning how to break a problem into small steps and test each step.</p></div></section><section class="content-section"><span class="eyebrow">More courses</span><h2>More languages are on the way</h2><p class="muted">These course pages are not available yet.</p><div class="course-preview-grid">${comingSoon}</div></section>${footer()}</article>`;
+  return `<article class="landing-page"><section class="home-hero"><p class="eyebrow">${copy.tagline}</p><h1 class="wordmark hero-wordmark" aria-label="Kodigo">kodigo<span aria-hidden="true">_</span></h1><h2>Learn code one clear step at a time.</h2><p class="hero-copy">Explore lessons with real code, clear explanations, guided practice, and small projects. Choose Python or Java from the navigation bar to begin.</p></section><section class="landing-features" aria-label="${K.i18n.t("whyKodigo")}"><article class="panel"><span class="eyebrow">01 · Read</span><h2>See how code works</h2><p class="muted">Each lesson connects syntax to its purpose, so every line has a reason for being there.</p></article><article class="panel"><span class="eyebrow">02 · Understand</span><h2>Build solid foundations</h2><p class="muted">Topics cover concepts, syntax rules, common mistakes, and how each skill is used in applications.</p></article><article class="panel"><span class="eyebrow">03 · Practice</span><h2>Write your own code</h2><p class="muted">Use the empty editor, solve practice prompts, and apply each idea through a guided mini project.</p></article></section><section class="landing-path panel"><span class="eyebrow">Learning path</span><h2>From first variable to real applications.</h2><ol><li><strong>Beginner:</strong> syntax, variables, data types, decisions, loops, collections, and functions.</li><li><strong>Intermediate:</strong> files, OOP, algorithms, databases, Git, and code organization.</li><li><strong>Advanced:</strong> testing, APIs, concurrency, web or GUI applications, performance, and software design.</li></ol><p class="muted">Take one topic at a time: read the example, write your own variation, then move forward once you can explain what the code does.</p></section><section class="landing-guide"><div><span class="eyebrow">Getting started</span><h2>A simple way to study</h2><p class="muted">Choose a language from the navigation bar, select a lesson from its sidebar, review the example, and then write a solution in the practice editor. Errors are part of programming; reading the message and testing one small change at a time are useful debugging habits.</p><p class="muted">Kodigo is developed by <strong>Nielagang Itlog</strong>.</p></div><div class="panel"><h3>A useful reminder</h3><p class="muted">Programming is not memorizing commands. It is learning how to break a problem into small steps and test each step.</p></div></section><section class="content-section"><span class="eyebrow">More courses</span><h2>More languages are on the way</h2><p class="muted">These course pages are not available yet.</p><div class="course-preview-grid">${comingSoon}</div></section>${footer()}</article>`;
 }
 
 function quizHomePage() {
@@ -270,8 +276,9 @@ function notFoundPage() {
 
 function updateTitle(route, lesson) {
   let title = "Kodigo | Learn by Coding, Improve by Building";
-  if (lesson) title = `${lesson.title} · ${curriculum[lesson.language].name} | Kodigo`;
-  else if (route.page === "history") title = `${K.history[route.language].title} | Kodigo`;
+  if (lesson) title = `${K.i18n.topic(lesson.language, lesson.id, lesson.title)} · ${curriculum[lesson.language].name} | Kodigo`;
+  else if (route.page === "history") title = `${K.i18n.history(route.language, K.history[route.language]).title} | Kodigo`;
+  else if (route.page === "roadmap") title = `${K.i18n.t("roadmap")} | Kodigo`;
   else if (route.page === "pins") title = "Kodigo ko | Kodigo";
   else if (route.page === "quiz" || route.page === "quiz-language") title = "Quiz | Kodigo";
   document.title = title;
@@ -287,30 +294,40 @@ function lessonMarkup(lesson) {
   const next = topics[current + 1];
   const done = getProgress().completed.includes(`${lesson.language}:${lesson.id}`);
   const hasSections = Array.isArray(lesson.sections) && lesson.sections.length > 0;
+  const lessonText = K.i18n.lessonText;
+  const english = K.i18n.language === "en";
   const baseCode = lesson.code || lesson.sections?.[0]?.code || "";
   const codeMarkup = renderCode(baseCode, lesson.annotations);
   const concepts = hasSections
     ? lesson.sections.slice(0, lesson.showAllSections ? undefined : 2).map((section, index) => {
       const isNewExample = index === 0 || section.code !== baseCode;
       const codeBlock = isNewExample ? `<div class="code-frame"><div class="code-scroll"><pre class="code-lines">${renderCode(section.code, section.annotations)}</pre></div></div>${renderLineByLine(section.code, lesson.language, section.annotations)}` : "";
-      return `<section class="content-section lesson-step" id="concept-${index + 1}"><div><span class="eyebrow">Step ${index + 1}</span><h2>${escapeHtml(section.heading)}</h2></div>${codeBlock}<div class="concept-explanation">${(section.explanation || []).map(line => `<p>${escapeHtml(line)}</p>`).join("")}</div>${section.whereUsed ? `<p class="annotation-note"><strong>Saan ginagamit?</strong> ${escapeHtml(section.whereUsed)}</p>` : ""}${section.tip ? `<p class="muted"><strong>Tandaan:</strong> ${escapeHtml(section.tip)}</p>` : ""}</section>`;
+      const explanation = (section.explanation || []).map(line => english
+        ? lessonText(line, "Study this example step by step to see how the concept works and what result it produces.")
+        : line);
+      const whereUsed = english ? lessonText(section.whereUsed, "Use this concept when building features that need this kind of data, logic, or behavior.") : section.whereUsed;
+      const tip = english ? lessonText(section.tip, "Change one value, run the code, and observe how the output changes.") : section.tip;
+      const heading = english ? lessonText(section.heading, "Lesson concept") : section.heading;
+      return `<section class="content-section lesson-step" id="concept-${index + 1}"><div><span class="eyebrow">${english ? "Step" : "Hakbang"} ${index + 1}</span><h2>${escapeHtml(heading)}</h2></div>${codeBlock}<div class="concept-explanation">${explanation.map(line => `<p>${escapeHtml(line)}</p>`).join("")}</div>${section.whereUsed ? `<p class="annotation-note"><strong>${english ? "Where is it used?" : "Saan ginagamit?"}</strong> ${escapeHtml(whereUsed)}</p>` : ""}${section.tip ? `<p class="muted"><strong>${english ? "Remember:" : "Tandaan:"}</strong> ${escapeHtml(tip)}</p>` : ""}</section>`;
     }).join("")
-    : `<section class="content-section" id="annotated-code"><div class="section-head"><div><span class="eyebrow">Code muna</span><h2>Basahin ang code</h2></div><span class="language-tag">${lesson.language}</span></div><div class="code-frame"><div class="code-scroll"><pre class="code-lines" id="lesson-code">${codeMarkup}</pre></div></div><div class="annotation-note" id="annotation-output" aria-live="polite">Pindutin o i-focus ang may dotted underline para sa paliwanag.</div></section>`;
+    : `<section class="content-section" id="annotated-code"><div class="section-head"><div><span class="eyebrow">${english ? "Code walkthrough" : "Code muna"}</span><h2>${english ? "Read the code" : "Basahin ang code"}</h2></div><span class="language-tag">${lesson.language}</span></div><div class="code-frame"><div class="code-scroll"><pre class="code-lines" id="lesson-code">${codeMarkup}</pre></div></div><div class="annotation-note" id="annotation-output" aria-live="polite">${english ? "Select or focus an underlined part of the code to see its explanation." : "Pindutin o i-focus ang may dotted underline para sa paliwanag."}</div></section>`;
   const toc = hasSections
-    ? lesson.sections.slice(0, lesson.showAllSections ? undefined : 2).map((section, index) => `<a href="#concept-${index + 1}">${escapeHtml(section.heading)}</a>`).join("")
+    ? lesson.sections.slice(0, lesson.showAllSections ? undefined : 2).map((section, index) => `<a href="#concept-${index + 1}">${escapeHtml(english ? lessonText(section.heading, "Lesson concept") : section.heading)}</a>`).join("")
     : '<a href="#annotated-code">Code</a>';
   const previousLink = previous
     ? `<a class="button" href="#/${lesson.language}/${previous.id}">Previous: ${escapeHtml(previous.title)}</a>`
     : `<a class="button" href="#/${lesson.language}/history">Previous: History</a>`;
-  return `<div class="lesson-layout"><article class="lesson-content"><header class="lesson-heading"><div class="eyebrow">${curriculum[lesson.language].name} - ${topic.n} / ${topics.length}</div><h1>${escapeHtml(lesson.title)}</h1><p class="muted">${escapeHtml(lesson.summary)}</p></header>
-    ${lesson.hook ? `<p class="hero-copy">${escapeHtml(lesson.hook)}</p>` : ""}
-    <section class="lesson-roadmap panel"><span class="eyebrow">Code-first flow</span><ol><li>Tingnan ang pattern at maikling meaning nito.</li><li>Palitan ang values o rule sa sample.</li><li>I-test ang sariling solution at ayusin kapag may error.</li></ol></section>
+  const displayedTitle = K.i18n.topic(lesson.language, lesson.id, lesson.title);
+  const summary = K.i18n.topicSummary(lesson.language, lesson.id, lesson.summary);
+  return `<div class="lesson-layout"><article class="lesson-content"><header class="lesson-heading"><div class="eyebrow">${curriculum[lesson.language].name} - ${topic.n} / ${topics.length}</div><h1>${escapeHtml(displayedTitle)}</h1><p class="muted">${escapeHtml(english ? summary : lesson.summary)}</p></header>
+    ${lesson.hook ? `<p class="hero-copy">${escapeHtml(lessonText(lesson.hook, "Let’s break down what every line does."))}</p>` : ""}
+    <section class="lesson-roadmap panel"><span class="eyebrow">Code-first flow</span><ol>${english ? "<li>Review the pattern and its short meaning.</li><li>Change a value or rule in the sample.</li><li>Test your own solution and fix any errors.</li>" : "<li>Tingnan ang pattern at maikling meaning nito.</li><li>Palitan ang values o rule sa sample.</li><li>I-test ang sariling solution at ayusin kapag may error.</li>"}</ol></section>
     ${concepts}
     ${renderChallenges(lesson.challenges)}
     ${renderChallenge(lesson, topic)}
     ${renderMemory(lesson)}
     ${renderPlayground(lesson)}
-    <section class="content-section panel" id="try-code"><div><span class="eyebrow">Practice lab</span><h2>Ikaw ang magsulat</h2><p class="muted">Mag-load ng sample kung kailangan, then baguhin ito para maging sarili mong solution. ${lesson.language === "java" ? copy.javaRunnerNotice : "Maglo-load ang Python runtime sa unang run; kailangan ng internet."}</p></div><label for="lesson-editor">Code editor</label><textarea id="lesson-editor" class="editor" spellcheck="false" placeholder="# Isulat ang code mo dito..."></textarea><div class="button-row"><button class="button" data-action="load-example">Load sample</button><button class="button primary" data-action="run-code">Run code</button><button class="button" data-action="retry-code" hidden>Retry</button><button class="button" data-action="reset-code">Clear</button><button class="button" data-action="copy-editor">Copy</button></div><p class="muted" id="run-note" aria-live="polite"></p><div class="section-head"><h3>Output</h3><span class="muted" id="run-status" aria-live="polite"></span></div><pre class="output-box" id="run-output" aria-live="polite">Ready kapag ikaw na.</pre></section>
+    <section class="content-section panel" id="try-code"><div><span class="eyebrow">${K.i18n.t("practiceLab")}</span><h2>${K.i18n.t("writeCode")}</h2><p class="muted">${K.i18n.t("loadSampleHelp")} ${lesson.language === "java" ? copy.javaRunnerNotice : (english ? "The Python runtime starts on the first run; an internet connection is required." : "Maglo-load ang Python runtime sa unang run; kailangan ng internet.")}</p></div><label for="lesson-editor">Code editor</label><textarea id="lesson-editor" class="editor" spellcheck="false" placeholder="${english ? "# Write your code here..." : "# Isulat ang code mo dito..."}"></textarea><div class="button-row"><button class="button" data-action="load-example">${K.i18n.t("loadSample")}</button><button class="button primary" data-action="run-code">${K.i18n.t("runCode")}</button><button class="button" data-action="retry-code" hidden>Retry</button><button class="button" data-action="reset-code">${K.i18n.t("clear")}</button><button class="button" data-action="copy-editor">${K.i18n.t("copy")}</button></div><p class="muted" id="run-note" aria-live="polite"></p><div class="section-head"><h3>${K.i18n.t("output")}</h3><span class="muted" id="run-status" aria-live="polite"></span></div><pre class="output-box" id="run-output" aria-live="polite">${K.i18n.t("readyWhenYouAre")}</pre></section>
     ${renderMiniProject(lesson.miniProject)}
     ${renderPredictions(lesson.predict)}${renderDebug(lesson.debug)}${renderReorder(lesson.reorder, lesson)}${renderFillBlanks(lesson.fillBlanks)}
     ${renderCommonMistakes(lesson)}
@@ -321,7 +338,10 @@ function lessonMarkup(lesson) {
     <aside class="lesson-toc panel"><h3>On this page</h3><nav>${toc}<a href="#coding-challenge">Coding challenge</a><a href="#memory-visualization">Memory visualization</a><a href="#test-case-playground">Test case playground</a><a href="#try-code">I-try mo</a>${lesson.predict?.length ? '<a href="#predict-output">Hulaan ang output</a>' : ""}${lesson.debug?.length ? '<a href="#debug-mode">Sirang code</a>' : ""}<a href="#reorder-lines">Drag-and-Drop Coding</a><a href="#common-mistakes">Common Mistakes</a><a href="#fill-in-the-blank">Fill in the blank</a><a href="#kodigo-card">Kodigo card</a></nav></aside></div>`;
 }
 
-async function render() {
+async function render(options = {}) {
+  const preservedScroll = options.preserveScroll
+    ? { left: window.scrollX, top: window.scrollY }
+    : null;
   const token = ++renderToken;
   const route = readRoute();
   document.body.dataset.page = route.page;
@@ -346,7 +366,7 @@ async function render() {
     saveNav({ ...state, lang: route.language, lastTopic: { ...state.lastTopic, [route.language]: topic.id } });
   }
   renderNav(route, sidebarState);
-  if (["lesson", "history", "pins", "not-found"].includes(route.page)) K.ui.drawer.close(false);
+  if (["lesson", "history", "roadmap", "pins", "not-found"].includes(route.page)) K.ui.drawer.close(false);
   if (route.page === "lesson") {
     const lesson = loadLesson(route.language, route.lesson);
     if (token !== renderToken) return;
@@ -354,7 +374,7 @@ async function render() {
       activeLesson = lesson;
       main.innerHTML = lessonMarkup(lesson);
       updateTitle(route, lesson);
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      if (!preservedScroll) window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     } else {
       document.body.dataset.lesson = "";
       main.innerHTML = notFoundPage();
@@ -368,12 +388,15 @@ async function render() {
       : route.page === "quiz" ? quizHomePage()
         : route.page === "quiz-language" ? quizQuestionMarkup(route)
           : route.page === "history" ? K.pages.history.renderHistory(route.language, sidebarState.lastTopic[route.language])
-          : route.page === "pins" ? pinsPage() : notFoundPage();
+            : route.page === "roadmap" ? K.pages.roadmap.renderRoadmap(route.path)
+            : route.page === "pins" ? pinsPage() : notFoundPage();
     main.innerHTML = page;
     updateTitle(route);
   }
-  document.querySelector("#streak-count").textContent = `${getProgress().streak || 0}-day streak`;
+  document.querySelector("#streak-count").textContent = `${getProgress().streak || 0} ${K.i18n.t("streak")}`;
+  K.i18n.localizePage();
   if (route.page !== "home" && ((!drawerWasOpen && route.page !== "lesson") || (drawerWasOpen && route.page === "lesson"))) main.focus({ preventScroll: true });
+  if (preservedScroll) window.scrollTo({ left: preservedScroll.left, top: preservedScroll.top, behavior: "auto" });
 }
 
 function showToast(message) {
@@ -437,7 +460,7 @@ function renderSearchResults(query) {
   const text = query.trim().toLowerCase();
   if (!text) { box.hidden = true; box.replaceChildren(); return; }
   const matches = allLessons.map(item => ({ ...item, score: `${item.title} ${item.keywords} ${item.level} ${item.language}`.toLowerCase().includes(text) ? 0 : Math.min(...text.split(/\s+/).map(word => `${item.title} ${item.keywords} ${item.language}`.toLowerCase().indexOf(word)).filter(index => index >= 0), 99) })).filter(item => item.score < 99).sort((a, b) => a.score - b.score).slice(0, 8);
-  box.innerHTML = matches.length ? matches.map(item => `<a class="search-result" href="#/${item.language}/${item.id}"><strong>${escapeHtml(item.title)}</strong><small>${curriculum[item.language].name} · ${item.level}</small></a>`).join("") : `<div class="empty-state">Walang nakita. Subukan ang ibang keyword.</div>`;
+  box.innerHTML = matches.length ? matches.map(item => `<a class="search-result" href="#/${item.language}/${item.id}"><strong>${escapeHtml(K.i18n.topic(item.language, item.id, item.title))}</strong><small>${curriculum[item.language].name} · ${K.i18n.t(item.level)}</small></a>`).join("") : `<div class="empty-state">Walang nakita. Subukan ang ibang keyword.</div>`;
   box.hidden = false;
 }
 
@@ -452,7 +475,7 @@ function updateMemoryVisualization(step) {
   if (!entries.length) {
     const empty = document.createElement("p");
     empty.className = "muted";
-    empty.textContent = "Wala pang variable values sa step na ito.";
+    empty.textContent = K.i18n.t("noVariablesYet");
     values.append(empty);
   } else {
     entries.forEach(([name, value]) => {
@@ -471,7 +494,9 @@ function updateMemoryVisualization(step) {
   }
   const label = document.querySelector("#memory-step-label");
   label.textContent = `Step ${memoryStep + 1} / ${trace.length}${snapshot.line ? ` · line ${snapshot.line}` : ""}`;
-  document.querySelector("#memory-note").textContent = snapshot.note || (snapshot.output ? `Output: ${snapshot.output}` : "Walang bagong output sa step na ito.");
+  document.querySelector("#memory-note").textContent = snapshot.note
+    ? K.i18n.lessonText(snapshot.note, "Follow the code step to see the next change.")
+    : (snapshot.output ? `Output: ${snapshot.output}` : K.i18n.t("noOutputThisStep"));
   document.querySelector('[data-action="memory-previous"]').disabled = memoryStep === 0;
   document.querySelector('[data-action="memory-next"]').disabled = memoryStep === trace.length - 1;
 }
@@ -479,10 +504,10 @@ function updateMemoryVisualization(step) {
 function updateTestCaseLabels() {
   const cases = [...document.querySelectorAll("[data-test-case]")];
   cases.forEach((testCase, index) => {
-    testCase.querySelector("h3").textContent = `Test case ${index + 1}${index === 0 ? " · baseline" : index === 1 ? " · sariling edge case" : " · custom"}`;
+    testCase.querySelector("h3").textContent = `Test case ${index + 1} · ${K.i18n.t(index === 0 ? "baseline" : index === 1 ? "ownEdgeCase" : "custom")}`;
     const remove = testCase.querySelector('[data-action="remove-test-case"]');
     remove.disabled = cases.length === 1;
-    remove.setAttribute("aria-label", `Alisin ang test case ${index + 1}`);
+    remove.setAttribute("aria-label", `${K.i18n.t("removeTestCase")} ${index + 1}`);
   });
 }
 
@@ -594,8 +619,12 @@ async function handleClick(event) {
     const level = K.features.practice.levels[document.querySelector("#challenge-level").value];
     const step = Number(target.dataset.step || 0);
     const output = document.querySelector("#challenge-hint-output");
+    const english = K.i18n.language === "en";
+    const hints = english ? level.hintsEn : level.hints;
     output.hidden = false;
-    output.textContent = step < level.hints.length ? `Hint ${step + 1}: ${level.hints[step]}` : "I-run ang code pagkatapos ng bawat maliit na pagbabago at tingnan ang output sa test playground.";
+    output.textContent = step < hints.length
+      ? `${K.i18n.t("hint")} ${step + 1}: ${hints[step]}`
+      : (english ? "Run the code after each small change and check the output in the test playground." : "I-run ang code pagkatapos ng bawat maliit na pagbabago at tingnan ang output sa test playground.");
     target.dataset.step = String(step + 1);
     return;
   }
@@ -608,7 +637,7 @@ async function handleClick(event) {
     testCase.querySelector(".test-expected").value = "";
     const result = testCase.querySelector(".test-result");
     result.className = "test-result feedback";
-    result.textContent = "Hindi pa na-run.";
+    result.textContent = K.i18n.t("notRunYet");
     cases.append(testCase);
     updateTestCaseLabels();
     testCase.querySelector(".test-input").focus();
@@ -626,19 +655,19 @@ async function handleClick(event) {
     const level = K.features.practice.levels[levelId];
     const status = document.querySelector("#challenge-status");
     const output = document.querySelector("#challenge-output");
-    if (!code.trim()) { status.textContent = "Magsulat muna ng solution code."; return; }
+    if (!code.trim()) { status.textContent = K.i18n.language === "en" ? "Write some solution code first." : "Magsulat muna ng solution code."; return; }
     const starter = activeLesson.editable?.starter || activeLesson.code || activeLesson.sections?.[0]?.code || "";
-    if (normalizeCode(code) === normalizeCode(starter)) { status.textContent = "Baguhin muna ang starter code ayon sa challenge bago mag-submit."; return; }
+    if (normalizeCode(code) === normalizeCode(K.i18n.practiceCode(starter))) { status.textContent = K.i18n.language === "en" ? "Change the starter code to meet the challenge before submitting." : "Baguhin muna ang starter code ayon sa challenge bago mag-submit."; return; }
     const token = renderToken;
     target.disabled = true;
-    status.textContent = activeLesson.language === "python" ? copy.loadingPython : "Running Java...";
+    status.textContent = activeLesson.language === "python" ? copy.loadingPython : (K.i18n.language === "en" ? "Running Java..." : "Tumatakbo ang Java...");
     const result = await runCode(activeLesson.language, code, message => { status.textContent = message; }, []);
     if (token !== renderToken) return;
     target.disabled = false;
-    output.textContent = result.output || result.error || "No output.";
+    output.textContent = result.output || result.error || (K.i18n.language === "en" ? "No output." : "Walang output.");
     output.classList.toggle("error", Boolean(result.error));
     if (result.error) {
-      status.textContent = "May error sa run. Ayusin muna ito at subukan ulit.";
+      status.textContent = K.i18n.language === "en" ? "The run returned an error. Fix it and try again." : "May error sa run. Ayusin muna ito at subukan ulit.";
       return;
     }
     const challengeId = `${activeLesson.language}:${activeLesson.id}:${levelId}`;
@@ -649,8 +678,10 @@ async function handleClick(event) {
       const updatedProgress = K.store.getProgress();
       updatedProgress.completedChallenges = [...(updatedProgress.completedChallenges || []), challengeId];
       K.store.saveProgress(updatedProgress);
-      status.textContent = `Successful run! +${level.points} points. Na-save ang progress mo. I-check ang output para siguradong natutupad nito ang challenge.`;
-    } else status.textContent = "Successful run! Nakuha mo na ang points para sa challenge na ito.";
+      status.textContent = K.i18n.language === "en"
+        ? `Successful run! +${level.points} points. Your progress was saved. Check that the output meets the challenge.`
+        : `Successful run! +${level.points} points. Na-save ang progress mo. I-check ang output para siguradong natutupad nito ang challenge.`;
+    } else status.textContent = K.i18n.language === "en" ? "Successful run! You have already earned points for this challenge." : "Successful run! Nakuha mo na ang points para sa challenge na ito.";
     document.querySelector("#challenge-complete").hidden = false;
     return;
   }
@@ -658,11 +689,11 @@ async function handleClick(event) {
     const code = document.querySelector("#playground-editor").value;
     const testCases = [...document.querySelectorAll("[data-test-case]")];
     const status = document.querySelector("#test-status");
-    if (!code.trim()) { status.textContent = "Magsulat muna ng code na ite-test."; return; }
+    if (!code.trim()) { status.textContent = K.i18n.language === "en" ? "Write some code to test first." : "Magsulat muna ng code na ite-test."; return; }
     const token = renderToken;
     let passedCount = 0;
     target.disabled = true;
-    status.textContent = "Tumatakbo ang test cases...";
+    status.textContent = K.i18n.language === "en" ? "Running test cases..." : "Tumatakbo ang test cases...";
     for (const [index, testCase] of testCases.entries()) {
       const input = testCase.querySelector(".test-input").value.split(/\r?\n/);
       const expected = testCase.querySelector(".test-expected").value;
@@ -672,12 +703,14 @@ async function handleClick(event) {
       const feedback = testCase.querySelector(".test-result");
       feedback.className = `test-result feedback ${passed ? "success" : "error"}`;
       feedback.textContent = passed
-        ? `PASSED · ${result.output || "Walang output"}`
-        : `FAILED · ${result.error ? `Error: ${result.error}` : `Expected: ${expected || "(empty)"} · Got: ${(result.output || "(empty)").trim()}`}`;
+        ? `PASSED · ${result.output || (K.i18n.language === "en" ? "No output" : "Walang output")}`
+        : `FAILED · ${result.error ? `Error: ${result.error}` : `${K.i18n.t("expectedOutput")}: ${expected || "(empty)"} · ${K.i18n.language === "en" ? "Got" : "Nakuha"}: ${(result.output || "(empty)").trim()}`}`;
       if (passed) passedCount += 1;
     }
     target.disabled = false;
-    status.textContent = `${passedCount} / ${testCases.length} test cases passed.`;
+    status.textContent = K.i18n.language === "en"
+      ? `${passedCount} / ${testCases.length} test cases passed.`
+      : `${passedCount} / ${testCases.length} test cases ang pumasa.`;
     return;
   }
   if (action === "quiz-boolean") {
@@ -737,9 +770,11 @@ async function handleClick(event) {
   if (action === "load-example") {
     const editor = document.querySelector("#lesson-editor");
     const sample = activeLesson.editable?.starter || activeLesson.code || activeLesson.sections?.[0]?.code || "";
-    editor.value = sample;
+    editor.value = K.i18n.practiceCode(sample);
     editor.focus();
-    document.querySelector("#run-output").textContent = "Sample loaded. Palitan ang isang value o rule, then i-run mo.";
+    document.querySelector("#run-output").textContent = K.i18n.language === "en"
+      ? "Sample loaded. Change a value or rule, then run it."
+      : "Sample loaded. Palitan ang isang value o rule, then i-run mo.";
     document.querySelector("#run-output").classList.remove("error");
     return;
   }
@@ -749,14 +784,21 @@ async function handleClick(event) {
     const index = Number(target.dataset.index); const question = activeLesson.predict[index];
     const input = document.querySelector(`#predict-answer-${index}`); const feedback = document.querySelector(`#predict-feedback-${index}`);
     const correct = normalizeAnswer(input.value) === normalizeAnswer(question.answer);
-    feedback.hidden = false; feedback.className = `feedback ${correct ? "success" : "error"}`; feedback.textContent = `${correct ? copy.correct : copy.wrong} Expected output: ${question.answer}. ${question.explanation}`;
+    const explanation = K.i18n.lessonText(question.explanation, "Review the code and compare its result with your prediction.");
+    feedback.hidden = false; feedback.className = `feedback ${correct ? "success" : "error"}`; feedback.textContent = `${correct ? copy.correct : copy.wrong} ${K.i18n.t("expectedOutput")}: ${question.answer}. ${explanation}`;
     if (!correct) { const lines = target.closest("article").querySelectorAll(".code-line"); lines[lines.length - 1]?.classList.add("current"); }
   }
   if (action === "debug-hint") {
     const index = Number(target.dataset.index); const item = activeLesson.debug[index]; const display = document.querySelector(`#debug-hint-${index}`); const step = Number(target.dataset.step || 0);
     display.hidden = false;
-    if (step < item.hints.length) { display.textContent = `Hint ${step + 1}: ${item.hints[step]}`; target.dataset.step = String(step + 1); if (step + 1 === item.hints.length) target.textContent = "Show answer"; }
-    else { display.textContent = `Answer: ${item.solution}\n\n${item.explanation}`; target.disabled = true; }
+    if (step < item.hints.length) {
+      display.textContent = `${K.i18n.t("hint")} ${step + 1}: ${K.i18n.lessonText(item.hints[step], "Check the line that causes the unexpected behavior.")}`;
+      target.dataset.step = String(step + 1);
+      if (step + 1 === item.hints.length) target.textContent = K.i18n.t("showAnswer");
+    } else {
+      display.textContent = `${K.i18n.language === "en" ? "Answer" : "Sagot"}: ${K.i18n.practiceCode(item.solution)}\n\n${K.i18n.lessonText(item.explanation, "Compare the corrected code with the original and identify why the change works.")}`;
+      target.disabled = true;
+    }
   }
   if (action === "debug-check") {
     const index = Number(target.dataset.index); const item = activeLesson.debug[index]; const code = document.querySelector(`#debug-editor-${index}`).value; const feedback = document.querySelector(`#debug-feedback-${index}`); let solved = false;
@@ -764,8 +806,10 @@ async function handleClick(event) {
       const actual = await runPython(code);
       const expected = await runPython(item.check);
       solved = !actual.error && !expected.error && normalizeAnswer(actual.output) === normalizeAnswer(expected.output);
-    } else solved = normalizeCode(code) === normalizeCode(item.check);
-    feedback.hidden = false; feedback.className = `feedback ${solved ? "success" : "error"}`; feedback.textContent = solved ? `${copy.correct} ${item.explanation}` : `${copy.wrong} Subukan ang Hint button.`;
+    } else solved = normalizeCode(code) === normalizeCode(K.i18n.practiceCode(item.check));
+    feedback.hidden = false; feedback.className = `feedback ${solved ? "success" : "error"}`; feedback.textContent = solved
+      ? `${copy.correct} ${K.i18n.lessonText(item.explanation, "The corrected code now produces the expected behavior.")}`
+      : `${copy.wrong} ${K.i18n.language === "en" ? "Try the Hint button." : "Subukan ang Hint button."}`;
     if (solved) { const progress = getProgress(); progress.badges = [...new Set([...(progress.badges || []), copy.badges[2]])]; saveProgress(progress); }
   }
   if (action === "check-reorder") {
@@ -773,7 +817,9 @@ async function handleClick(event) {
     const slots = [...target.closest("[data-reorder]").querySelectorAll(".code-drop-slot")];
     const isCorrect = slots.length > 0 && slots.every(slot => slot.dataset.line === slot.dataset.expectedLine);
     slots.forEach(slot => { slot.classList.toggle("correct", slot.dataset.line === slot.dataset.expectedLine); slot.classList.toggle("incorrect", Boolean(slot.dataset.line) && slot.dataset.line !== slot.dataset.expectedLine); });
-    const feedback = document.querySelector(`#reorder-feedback-${index}`); feedback.hidden = false; feedback.className = `feedback ${isCorrect ? "success" : "error"}`; feedback.textContent = isCorrect ? `${copy.correct} ${task.explanation}` : copy.wrong;
+    const feedback = document.querySelector(`#reorder-feedback-${index}`); feedback.hidden = false; feedback.className = `feedback ${isCorrect ? "success" : "error"}`; feedback.textContent = isCorrect
+      ? `${copy.correct} ${K.i18n.lessonText(task.explanation, "The code is now in the correct order.")}`
+      : copy.wrong;
   }
   if (action === "reset-reorder") { resetReorderTask(target.closest("[data-reorder]")); return; }
   if (action === "check-fill-blank") {
@@ -781,7 +827,9 @@ async function handleClick(event) {
     const input = document.querySelector(`#fill-blank-answer-${index}`); const feedback = document.querySelector(`#fill-blank-feedback-${index}`);
     const correct = normalizeCode(input.value) === normalizeCode(task.answer);
     feedback.hidden = false; feedback.className = `feedback ${correct ? "success" : "error"}`;
-    feedback.textContent = correct ? `${copy.correct} ${task.explanation}` : `${copy.wrong} Hint: ${task.hint}`;
+    feedback.textContent = correct
+      ? `${copy.correct} ${K.i18n.lessonText(task.explanation, "The missing code is correct.")}`
+      : `${copy.wrong} ${K.i18n.t("hint")}: ${K.i18n.lessonText(task.hint, "Review the surrounding code to find the required value or operation.")}`;
     if (correct) input.closest("[data-fill-blank]").classList.add("correct");
     return;
   }
@@ -794,8 +842,12 @@ async function handleClick(event) {
   if (action === "replay-animation") replayAnimation(document.querySelector("#animation-stage"), activeLesson.animation);
   if (action === "project-hint") {
     const output = document.querySelector("#project-hint-output"); const index = Number(target.dataset.step || 0); output.hidden = false;
-    if (index < activeLesson.miniProject.hints.length) { output.textContent = `Hint ${index + 1}: ${activeLesson.miniProject.hints[index]}`; target.dataset.step = String(index + 1); }
-    else { output.textContent = "Wala nang ibang hint. Solution is available sa button sa tabi."; }
+    if (index < activeLesson.miniProject.hints.length) {
+      output.textContent = `${K.i18n.t("hint")} ${index + 1}: ${K.i18n.lessonText(activeLesson.miniProject.hints[index], "Break the project into smaller steps and reuse the lesson example.")}`;
+      target.dataset.step = String(index + 1);
+    } else {
+      output.textContent = K.i18n.language === "en" ? "There are no more hints. Use the solution button if needed." : "Wala nang ibang hint. Nasa katabing button ang solution.";
+    }
   }
   if (action === "project-solution") { document.querySelector("#project-solution-output").hidden = false; }
   if (action === "copy-snippet") { const snippet = activeLesson.kodigoCard[Number(target.dataset.index)]; await copyText(snippet.snippet); }
@@ -874,11 +926,11 @@ document.addEventListener("change", event => {
   if (!event.target.matches("#challenge-level")) return;
   const level = K.features.practice.levels[event.target.value];
   if (!level) return;
-  document.querySelector("#challenge-task").textContent = level.task;
+  document.querySelector("#challenge-task").textContent = K.i18n.language === "en" ? level.taskEn : level.task;
   document.querySelector("#challenge-points").textContent = String(level.points);
   const hint = document.querySelector('[data-action="challenge-hint"]');
   hint.dataset.step = "0";
-  hint.textContent = "Hint";
+  hint.textContent = K.i18n.t("hint");
   document.querySelector("#challenge-hint-output").hidden = true;
   document.querySelector("#challenge-status").textContent = "";
   const completedId = `${activeLesson.language}:${activeLesson.id}:${event.target.value}`;

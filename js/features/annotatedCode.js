@@ -29,7 +29,9 @@ function renderCode(code, annotations = [], currentLine = -1) {
     const classes = ["code-line", currentLine === lineNumber ? "current" : ""].filter(Boolean).join(" ");
     let contents = highlightLine(line);
     if (note) {
-      const noteAttrs = ` class="annotated" tabindex="0" role="button" aria-label="Paliwanag sa line ${lineNumber}" data-annotation="${escapeHtml(note.text)}"`;
+      const english = K.i18n.language === "en";
+      const annotation = K.i18n.lessonText(note.text, "This note explains the highlighted part of the code.");
+      const noteAttrs = ` class="annotated" tabindex="0" role="button" aria-label="${english ? "Explanation for" : "Paliwanag sa"} line ${lineNumber}" data-annotation="${escapeHtml(annotation)}"`;
       if (Number.isInteger(note.from) && Number.isInteger(note.to) && note.to > note.from) {
         const start = Math.max(0, Math.min(line.length, note.from));
         const end = Math.max(start, Math.min(line.length, note.to));

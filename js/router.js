@@ -3,6 +3,11 @@
 function readRoute() {
   const path = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   if (!path.length) return { page: "home" };
+  if (path[0] === "roadmap") {
+    if (path.length === 1) return { page: "roadmap" };
+    if (path.length === 2 && /^[a-z0-9-]+$/.test(path[1])) return { page: "roadmap", path: path[1] };
+    return { page: "not-found" };
+  }
   if (path[0] === "kodigo-ko" || path[0] === "kodigo") return { page: "pins" };
   if (path[0] === "quiz") {
     if (path.length === 1) return { page: "quiz" };

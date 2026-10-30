@@ -5,19 +5,25 @@ const levels = {
     label: "Beginner",
     points: 10,
     task: "I-run ang starter code, pagkatapos baguhin ang kahit isang value o instruction para maipakita ang pangunahing idea ng topic.",
-    hints: ["Hanapin ang value o linya na direktang konektado sa topic.", "Baguhin muna ang isang maliit na bahagi, saka i-run ulit."]
+    hints: ["Hanapin ang value o linya na direktang konektado sa topic.", "Baguhin muna ang isang maliit na bahagi, saka i-run ulit."],
+    taskEn: "Run the starter code, then change at least one value or instruction to demonstrate the main idea of the topic.",
+    hintsEn: ["Find the value or line directly connected to the topic.", "Change one small part first, then run the code again."]
   },
   intermediate: {
     label: "Intermediate",
     points: 20,
     task: "Palawakin ang starter code: magdagdag ng isa pang value, case, o hakbang na gumagamit ng topic.",
-    hints: ["I-reuse ang pattern na nasa starter code.", "Subukan ang dagdag na case at i-check kung tama ang output."]
+    hints: ["I-reuse ang pattern na nasa starter code.", "Subukan ang dagdag na case at i-check kung tama ang output."],
+    taskEn: "Extend the starter code by adding a value, case, or step that uses the topic.",
+    hintsEn: ["Reuse a pattern from the starter code.", "Try an additional case and check whether the output is correct."]
   },
   advanced: {
     label: "Advanced",
     points: 30,
     task: "Gawing mas matibay ang starter code sa pamamagitan ng pag-handle ng boundary case o invalid na data.",
-    hints: ["Isipin kung anong input o state ang puwedeng magdulot ng error.", "Magdagdag ng check bago gamitin o baguhin ang value."]
+    hints: ["Isipin kung anong input o state ang puwedeng magdulot ng error.", "Magdagdag ng check bago gamitin o baguhin ang value."],
+    taskEn: "Make the starter code more robust by handling a boundary case or invalid data.",
+    hintsEn: ["Think about which input or state could cause an error.", "Add a check before using or changing the value."]
   }
 };
 
@@ -26,18 +32,19 @@ function starterFor(lesson) {
 }
 
 function renderChallenge(lesson, topic) {
-  const starter = escapeHtml(starterFor(lesson));
+  const starter = escapeHtml(K.i18n.practiceCode(starterFor(lesson)));
   const level = levels.beginner;
+  const english = K.i18n.language === "en";
   const progress = K.store.getProgress();
   const completedId = `${lesson.language}:${lesson.id}:beginner`;
   const completed = (progress.completedChallenges || []).includes(completedId);
   return `<section class="content-section panel practice-challenge" id="coding-challenge">
-    <div><span class="eyebrow">Coding challenge</span><h2>Ikaw naman: ${escapeHtml(topic.title)}</h2><p class="muted">Pumili ng difficulty, gamitin ang hints kung kailangan, at i-run ang sariling solution. Kapag tumakbo nang walang error, makukuha mo ang points; gamitin ang test playground para i-verify ang output.</p></div>
-    <label for="challenge-level">Difficulty</label><select class="form-control" id="challenge-level" data-action="challenge-level"><option value="beginner">Beginner · 10 points</option><option value="intermediate">Intermediate · 20 points</option><option value="advanced">Advanced · 30 points</option></select>
-    <p id="challenge-task" class="feedback">${escapeHtml(level.task)}</p>
-    <label for="challenge-editor">Solution code</label><textarea id="challenge-editor" class="editor" spellcheck="false">${starter}</textarea>
-    <div class="button-row"><button class="button" type="button" data-action="challenge-hint">Hint</button><button class="button primary" type="button" data-action="challenge-submit">Run challenge · <span id="challenge-points">${level.points}</span> points</button><span id="challenge-complete" class="badge" ${completed ? "" : "hidden"}>Completed</span></div>
-    <div id="challenge-hint-output" class="feedback" aria-live="polite" hidden></div><p id="challenge-status" class="muted" aria-live="polite"></p><pre id="challenge-output" class="output-box" aria-live="polite">Ready kapag ikaw na.</pre>
+    <div><span class="eyebrow">${K.i18n.t("codingChallenge")}</span><h2>${K.i18n.t("yourTurn")} ${escapeHtml(topic.title)}</h2><p class="muted">${K.i18n.t("chooseDifficulty")}</p></div>
+    <label for="challenge-level">${K.i18n.t("difficulty")}</label><select class="form-control" id="challenge-level" data-action="challenge-level"><option value="beginner">${K.i18n.t("beginner")} · 10 points</option><option value="intermediate">${K.i18n.t("intermediate")} · 20 points</option><option value="advanced">${K.i18n.t("advanced")} · 30 points</option></select>
+    <p id="challenge-task" class="feedback">${escapeHtml(english ? level.taskEn : level.task)}</p>
+    <label for="challenge-editor">${K.i18n.t("solutionCode")}</label><textarea id="challenge-editor" class="editor" spellcheck="false">${starter}</textarea>
+    <div class="button-row"><button class="button" type="button" data-action="challenge-hint">${K.i18n.t("hint")}</button><button class="button primary" type="button" data-action="challenge-submit">${K.i18n.t("runChallenge")} · <span id="challenge-points">${level.points}</span> points</button><span id="challenge-complete" class="badge" ${completed ? "" : "hidden"}>${K.i18n.t("completed")}</span></div>
+    <div id="challenge-hint-output" class="feedback" aria-live="polite" hidden></div><p id="challenge-status" class="muted" aria-live="polite"></p><pre id="challenge-output" class="output-box" aria-live="polite">${K.i18n.t("readyWhenYouAre")}</pre>
   </section>`;
 }
 
@@ -121,11 +128,11 @@ function renderMemory(lesson) {
   const first = trace[0];
   const entries = Object.entries(first.vars || {});
   return `<section class="content-section panel" id="memory-visualization">
-    <div><span class="eyebrow">Memory visualization</span><h2>Silipin ang laman ng memory</h2><p class="muted">I-step ang code para makita ang pagbabago ng variables, collections, at object values habang sinusundan ang lesson.</p></div>
+    <div><span class="eyebrow">${K.i18n.t("memoryVisualization")}</span><h2>${K.i18n.t("peekMemory")}</h2><p class="muted">${K.i18n.t("stepThroughCode")}</p></div>
     <p id="memory-step-label" class="badge" aria-live="polite">Step 1 / ${trace.length}${first.line ? ` · line ${first.line}` : ""}</p>
-    <div id="memory-values" class="memory-values" aria-live="polite">${entries.length ? entries.map(([name, value]) => `<article class="memory-value"><strong>${escapeHtml(name)}</strong><span class="memory-type">${escapeHtml(memoryType(value))}</span><code>${escapeHtml(displayMemoryValue(value))}</code></article>`).join("") : '<p class="muted">Wala pang variable values sa step na ito.</p>'}</div>
-    <p id="memory-note" class="muted">${escapeHtml(first.note || first.output ? first.note || `Output: ${first.output}` : "I-advance ang step para makita ang susunod na pagbabago.")}</p>
-    <div class="button-row"><button class="button" type="button" data-action="memory-previous" ${trace.length < 2 ? "disabled" : ""}>Previous step</button><button class="button primary" type="button" data-action="memory-next" ${trace.length < 2 ? "disabled" : ""}>Next step</button></div>
+    <div id="memory-values" class="memory-values" aria-live="polite">${entries.length ? entries.map(([name, value]) => `<article class="memory-value"><strong>${escapeHtml(name)}</strong><span class="memory-type">${escapeHtml(memoryType(value))}</span><code>${escapeHtml(displayMemoryValue(value))}</code></article>`).join("") : `<p class="muted">${K.i18n.t("noVariablesYet")}</p>`}</div>
+    <p id="memory-note" class="muted">${escapeHtml(first.note || first.output ? K.i18n.lessonText(first.note || `Output: ${first.output}`, "Follow the code step to see the next change.") : K.i18n.t("noOutputThisStep"))}</p>
+    <div class="button-row"><button class="button" type="button" data-action="memory-previous" ${trace.length < 2 ? "disabled" : ""}>${K.i18n.t("previousStep")}</button><button class="button primary" type="button" data-action="memory-next" ${trace.length < 2 ? "disabled" : ""}>${K.i18n.t("nextStep")}</button></div>
   </section>`;
 }
 
@@ -143,11 +150,12 @@ function displayMemoryValue(value) {
 
 function renderPlayground(lesson) {
   const expected = lesson.editable?.expectedOutput || "";
+  const starter = escapeHtml(K.i18n.practiceCode(starterFor(lesson)));
   return `<section class="content-section panel" id="test-case-playground">
-    <div><span class="eyebrow">Test case playground</span><h2>I-test sa iba't ibang input</h2><p class="muted">Patakbuhin ang code sa bawat test case. Ilagay ang input (kung kailangan) at inaasahang output para makita kung pumasa o bumagsak.</p>${lesson.language === "java" ? `<p class="annotation-note">${K.features.runner.RUNNER_CONFIG.java.enabled ? "Ipinapadala ang Java code at test input sa configured Piston runner." : escapeHtml(K.copy.javaRunnerNotice)}</p>` : ""}</div>
-    <label for="playground-editor">Code editor</label><textarea id="playground-editor" class="editor" spellcheck="false">${escapeHtml(starterFor(lesson))}</textarea>
-    <div id="test-cases" class="test-cases"><article class="test-case" data-test-case><div class="section-head"><h3>Test case 1 · baseline</h3><button class="button danger" type="button" data-action="remove-test-case" aria-label="Alisin ang test case 1" disabled>Remove</button></div><label>Input <textarea class="form-control test-input" rows="2" placeholder="Isang input kada line"></textarea></label><label>Expected output <textarea class="form-control test-expected" rows="2" placeholder="Ilagay ang inaasahang output">${escapeHtml(expected)}</textarea></label><p class="test-result feedback" aria-live="polite">Hindi pa na-run.</p></article><article class="test-case" data-test-case><div class="section-head"><h3>Test case 2 · sariling edge case</h3><button class="button danger" type="button" data-action="remove-test-case" aria-label="Alisin ang test case 2">Remove</button></div><label>Input <textarea class="form-control test-input" rows="2" placeholder="Halimbawa: 0, blank, o ibang value"></textarea></label><label>Expected output <textarea class="form-control test-expected" rows="2" placeholder="Ano ang dapat mangyari?"></textarea></label><p class="test-result feedback" aria-live="polite">Maglagay ng case para ma-test ang solution.</p></article></div>
-    <div class="button-row"><button class="button" type="button" data-action="add-test-case">Add test case</button><button class="button primary" type="button" data-action="run-test-cases">Run all tests</button></div><p id="test-status" class="muted" aria-live="polite"></p>
+    <div><span class="eyebrow">${K.i18n.t("testCasePlayground")}</span><h2>${K.i18n.t("tryDifferentInputs")}</h2><p class="muted">${K.i18n.t("runEachTest")}</p>${lesson.language === "java" ? `<p class="annotation-note">${K.features.runner.RUNNER_CONFIG.java.enabled ? (K.i18n.language === "en" ? "Java code and test input are sent to the configured Piston runner." : "Ipinapadala ang Java code at test input sa configured Piston runner.") : escapeHtml(K.copy.javaRunnerNotice)}</p>` : ""}</div>
+    <label for="playground-editor">Code editor</label><textarea id="playground-editor" class="editor" spellcheck="false">${starter}</textarea>
+    <div id="test-cases" class="test-cases"><article class="test-case" data-test-case><div class="section-head"><h3>Test case 1 · ${K.i18n.t("baseline")}</h3><button class="button danger" type="button" data-action="remove-test-case" aria-label="${K.i18n.t("removeTestCase")} 1" disabled>${K.i18n.t("removeTestCase")}</button></div><label>${K.i18n.t("input")} <textarea class="form-control test-input" rows="2" placeholder="${K.i18n.t("oneInputPerLine")}"></textarea></label><label>${K.i18n.t("expectedOutput")} <textarea class="form-control test-expected" rows="2" placeholder="${K.i18n.t("expectedOutput")}">${escapeHtml(expected)}</textarea></label><p class="test-result feedback" aria-live="polite">${K.i18n.t("notRunYet")}</p></article><article class="test-case" data-test-case><div class="section-head"><h3>Test case 2 · ${K.i18n.t("ownEdgeCase")}</h3><button class="button danger" type="button" data-action="remove-test-case" aria-label="${K.i18n.t("removeTestCase")} 2">${K.i18n.t("removeTestCase")}</button></div><label>${K.i18n.t("input")} <textarea class="form-control test-input" rows="2" placeholder="${K.i18n.t("exampleInputs")}"></textarea></label><label>${K.i18n.t("expectedOutput")} <textarea class="form-control test-expected" rows="2" placeholder="${K.i18n.t("expectedBehavior")}"></textarea></label><p class="test-result feedback" aria-live="polite">${K.i18n.language === "en" ? "Add a case to test your solution." : "Maglagay ng case para ma-test ang solution."}</p></article></div>
+    <div class="button-row"><button class="button" type="button" data-action="add-test-case">${K.i18n.t("addTestCase")}</button><button class="button primary" type="button" data-action="run-test-cases">${K.i18n.t("runAllTests")}</button></div><p id="test-status" class="muted" aria-live="polite"></p>
   </section>`;
 }
 

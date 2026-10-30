@@ -30,17 +30,19 @@ function choicesFor(answer, language) {
 function renderReorder(tasks = [], lesson) {
   const activityTasks = tasks.length ? tasks : fallbackTask(lesson);
   if (!activityTasks.length) return "";
-  return `<section class="content-section panel" id="reorder-lines"><div><span class="eyebrow">Drag-and-Drop Coding</span><h2>Kumpletuhin ang isang missing part</h2><p class="muted">May existing code na sa code area. I-drag ang tamang choice papunta mismo sa <strong>___</strong> na blank. Sa phone, tap ang choice, then tap ang blank.</p></div>${activityTasks.map((task, taskIndex) => {
+  const english = K.i18n.language === "en";
+  const escape = K.features.escapeHtml;
+  return `<section class="content-section panel" id="reorder-lines"><div><span class="eyebrow">${K.i18n.t("dragDropCoding")}</span><h2>${K.i18n.t("completeMissingPart")}</h2><p class="muted">${K.i18n.t("dragChoiceInstructions")}</p></div>${activityTasks.map((task, taskIndex) => {
     const blank = findBlank(task.lines, `${lesson?.language}:${lesson?.id}:${taskIndex}`);
     if (!blank) return "";
     const choices = choicesFor(blank.answer, lesson?.language);
     const code = task.lines.map((line, index) => {
-      if (index !== blank.lineIndex) return `<div class="code-starter-line"><span class="drop-line-number">${index + 1}</span><code>${K.features.escapeHtml(line) || " "}</code></div>`;
-      const before = K.features.escapeHtml(line.slice(0, blank.start));
-      const after = K.features.escapeHtml(line.slice(blank.end));
-      return `<div class="code-starter-line"><span class="drop-line-number">${index + 1}</span><code>${before}<span class="code-drop-slot" data-drop-slot="${index}" data-expected-line="${K.features.escapeHtml(blank.answer)}" tabindex="0" role="button" aria-label="Missing code: drop an answer here">___</span>${after}</code></div>`;
+      if (index !== blank.lineIndex) return `<div class="code-starter-line"><span class="drop-line-number">${index + 1}</span><code>${escape(K.i18n.practiceCode(line)) || " "}</code></div>`;
+      const before = escape(line.slice(0, blank.start));
+      const after = escape(line.slice(blank.end));
+      return `<div class="code-starter-line"><span class="drop-line-number">${index + 1}</span><code>${before}<span class="code-drop-slot" data-drop-slot="${index}" data-expected-line="${escape(blank.answer)}" tabindex="0" role="button" aria-label="${english ? "Missing code: drop an answer here" : "Missing code: ilagay dito ang sagot"}">___</span>${after}</code></div>`;
     }).join("");
-    return `<article class="drag-code-task" data-reorder="${taskIndex}"><p class="drag-task-label">Punan ang blank sa existing code.</p><div class="code-frame"><div class="code-scroll"><div class="code-drop-area">${code}</div></div></div><p class="muted">Choices</p><div class="code-choice-tray">${choices.map((choice, index) => `<button class="code-choice" type="button" draggable="true" data-code-choice="${index}" data-line="${K.features.escapeHtml(choice)}"><code>${K.features.escapeHtml(choice)}</code></button>`).join("")}</div><div class="button-row"><button type="button" class="button primary" data-action="check-reorder" data-index="${taskIndex}">Check answer</button><button type="button" class="button" data-action="reset-reorder" data-index="${taskIndex}">Reset</button><span class="feedback" id="reorder-feedback-${taskIndex}" aria-live="polite" hidden></span></div></article>`;
+    return `<article class="drag-code-task" data-reorder="${taskIndex}"><p class="drag-task-label">${K.i18n.t("fillBlankExisting")}</p><div class="code-frame"><div class="code-scroll"><div class="code-drop-area">${code}</div></div></div><p class="muted">${K.i18n.t("choices")}</p><div class="code-choice-tray">${choices.map((choice, index) => `<button class="code-choice" type="button" draggable="true" data-code-choice="${index}" data-line="${escape(choice)}"><code>${escape(choice)}</code></button>`).join("")}</div><div class="button-row"><button type="button" class="button primary" data-action="check-reorder" data-index="${taskIndex}">${K.i18n.t("checkAnswer")}</button><button type="button" class="button" data-action="reset-reorder" data-index="${taskIndex}">${K.i18n.t("reset")}</button><span class="feedback" id="reorder-feedback-${taskIndex}" aria-live="polite" hidden></span></div></article>`;
   }).join("")}</section>`;
 }
 K.features.reorderLines = { renderReorder };

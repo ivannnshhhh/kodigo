@@ -124,6 +124,38 @@ p { max-width: 75ch; margin: 0; }
 .history-fun-fact { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--accent); border-radius: var(--radius-card); background: var(--surface-2); }
 .history-milestones { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .streak { color: var(--text-muted); font-size: 13px; }
+.roadmap-page { display: grid; gap: clamp(24px, 4vw, 40px); }
+.roadmap-hero { display: grid; gap: 12px; padding: clamp(22px, 4vw, 36px); border: 1px solid var(--border); border-radius: var(--radius-card); background: linear-gradient(135deg, var(--surface-2), var(--surface)); }
+.roadmap-hero > p { max-width: 68ch; color: var(--text-muted); font-size: 17px; line-height: 1.65; }
+.roadmap-grid { display: grid; gap: 12px; }
+.roadmap-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 16px; min-height: 132px; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); color: var(--text); text-decoration: none; transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease; }
+.roadmap-card:hover, .roadmap-card:focus-visible { transform: translateY(-2px); border-color: var(--accent); background: var(--surface-2); }
+.roadmap-card-number, .roadmap-step-marker { color: var(--accent); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13px; font-weight: 750; }
+.roadmap-card-copy { display: grid; gap: 8px; }
+.roadmap-card-copy strong { font-size: 18px; }
+.roadmap-card-copy > span { color: var(--text-muted); line-height: 1.55; }
+.roadmap-card-arrow { color: var(--accent); font-size: 22px; }
+.roadmap-back { width: fit-content; color: var(--accent); font-weight: 650; text-decoration: none; }
+.roadmap-back:hover { text-decoration: underline; }
+.roadmap-steps { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.roadmap-step { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: start; gap: 12px; }
+.roadmap-step-marker { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--accent); border-radius: 50%; background: var(--surface-2); }
+.roadmap-step-card { display: grid; gap: 14px; padding: clamp(16px, 3vw, 24px); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); }
+.roadmap-step-heading { display: grid; gap: 6px; }
+.roadmap-step-card > p { color: var(--text-muted); line-height: 1.6; }
+.roadmap-step-outcome { display: grid; grid-template-columns: minmax(90px, .35fr) minmax(0, 1fr); gap: 8px 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+.roadmap-step-outcome > span { color: var(--text-muted); font-size: 13px; font-weight: 650; }
+.roadmap-step-outcome > strong { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+@media (min-width: 640px) {
+  .roadmap-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .roadmap-card { grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding: 16px; }
+  .roadmap-step { grid-template-columns: 34px minmax(0, 1fr); gap: 8px; }
+  .roadmap-step-marker { width: 32px; height: 32px; }
+  .roadmap-step-outcome { grid-template-columns: 1fr; gap: 4px; }
+  .roadmap-step-outcome > span:not(:first-child) { margin-top: 8px; }
+}
 @media (max-width: 480px) { .code-lines, .editor { font-size: 13px; } .sortable-line { grid-template-columns: minmax(0, 1fr) auto auto; } }
 @media (max-width: 640px) { .line-by-line li { grid-template-columns: 1fr; gap: 6px; } }
 @media (max-width: 760px) { .history-milestones { grid-template-columns: 1fr; } }

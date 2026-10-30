@@ -2,6 +2,7 @@
 (function (K) {
 const svgNamespace = "http://www.w3.org/2000/svg";
 let renderedLanguage = "";
+let renderedMode = "";
 let lastRoute = "";
 
 function makeIcon(complete) {
@@ -56,12 +57,13 @@ function makeHistoryIcon() {
 }
 
 function makeTopicRow(topic, language, completed) {
+  const titleText = topic.title;
   const row = document.createElement("a");
   row.className = "nav-topic-row";
   row.href = `#/${language}/${topic.id}`;
   row.dataset.topicId = topic.id;
   row.dataset.topicLang = language;
-  row.setAttribute("aria-label", `${topic.n}. ${topic.title}${completed ? ", complete" : ""}`);
+  row.setAttribute("aria-label", `${topic.n}. ${titleText}${completed ? ", complete" : ""}`);
   const number = document.createElement("span");
   number.className = "nav-topic-number";
   number.dataset.topicNumber = "";
@@ -69,24 +71,58 @@ function makeTopicRow(topic, language, completed) {
   if (completed) number.replaceChildren(makeIcon(true));
   const title = document.createElement("span");
   title.className = "nav-topic-title";
-  title.textContent = topic.title;
+  title.textContent = titleText;
   row.append(number, title);
   return row;
 }
 
+function buildRoadmapList(middle) {
+  middle.replaceChildren();
+  K.pages.roadmap.paths.forEach((path, index) => {
+    const row = document.createElement("a");
+    row.className = "nav-topic-row roadmap-nav-row";
+    row.href = `#/roadmap/${path.id}`;
+    row.dataset.roadmapId = path.id;
+    row.setAttribute("aria-label", `${index + 1}. ${path.title}`);
+    const number = document.createElement("span");
+    number.className = "nav-topic-number";
+    number.textContent = String(index + 1).padStart(2, "0");
+    const title = document.createElement("span");
+    title.className = "nav-topic-title";
+    title.textContent = path.title;
+    row.append(number, title);
+    middle.append(row);
+  });
+}
+
+function updateRoadmapCurrent(middle, route, scrollCurrent) {
+  let current = null;
+  middle.querySelectorAll(".roadmap-nav-row").forEach(row => {
+    const active = route.path === row.dataset.roadmapId;
+    row.classList.toggle("current", active);
+    row.removeAttribute("aria-current");
+    if (active) {
+      row.setAttribute("aria-current", "page");
+      current = row;
+    }
+  });
+  if (current && scrollCurrent) current.scrollIntoView({ block: "nearest" });
+}
+
 // Creates the History link that stays above curriculum groups.
 function makeHistoryRow(language) {
+  const label = K.i18n.t("history");
   const row = document.createElement("a");
   row.className = "nav-topic-row nav-history-row";
   row.href = `#/${language}/history`;
   row.dataset.historyLang = language;
-  row.setAttribute("aria-label", "History");
+  row.setAttribute("aria-label", label);
   const icon = document.createElement("span");
   icon.className = "nav-topic-number";
   icon.append(makeHistoryIcon());
   const title = document.createElement("span");
   title.className = "nav-topic-title";
-  title.textContent = "History";
+  title.textContent = label;
   row.append(icon, title);
   return row;
 }
@@ -101,7 +137,7 @@ function buildTopicList(middle, language, progress) {
     group.className = "nav-topic-group";
     const heading = document.createElement("h2");
     heading.className = "nav-level-heading";
-    heading.textContent = level[0].toUpperCase() + level.slice(1);
+    heading.textContent = K.i18n.t(level);
     const list = document.createElement("div");
     list.className = "nav-topic-list";
     topics.filter(topic => topic.level === level).forEach(topic => {
@@ -136,12 +172,17 @@ function updateCurrent(middle, route, language, scrollCurrent) {
 
 function renderSidebar(route, state, progress) {
   const middle = document.querySelector("#course-nav");
-  if (renderedLanguage !== state.lang) {
-    buildTopicList(middle, state.lang, progress);
+  const mode = route.page === "roadmap" ? "roadmap" : "course";
+  middle.setAttribute("aria-label", K.i18n.t(mode === "roadmap" ? "careerPaths" : "lessons"));
+  if (renderedMode !== mode || (mode === "course" && renderedLanguage !== state.lang)) {
+    if (mode === "roadmap") buildRoadmapList(middle);
+    else buildTopicList(middle, state.lang, progress);
     renderedLanguage = state.lang;
+    renderedMode = mode;
   }
-  const routeKey = `${route.page}/${route.language || ""}/${route.lesson || ""}`;
-  updateCurrent(middle, route, state.lang, routeKey !== lastRoute);
+  const routeKey = `${route.page}/${route.language || ""}/${route.lesson || ""}/${route.path || ""}`;
+  if (mode === "roadmap") updateRoadmapCurrent(middle, route, routeKey !== lastRoute);
+  else updateCurrent(middle, route, state.lang, routeKey !== lastRoute);
   lastRoute = routeKey;
 }
 
@@ -155,5 +196,5 @@ function updateLessonStatus(language, id, complete) {
 }
 
 K.ui = K.ui || {};
-K.ui.nav = { renderSidebar, updateLessonStatus };
+K.ui.nav = { renderSidebar, updateLessonStatus, refresh: () => { renderedLanguage = ""; renderedMode = ""; } };
 })(window.Kodigo = window.Kodigo || {});

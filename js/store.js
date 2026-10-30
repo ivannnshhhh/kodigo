@@ -37,6 +37,8 @@ const getPins = () => read("pins", []);
 const savePins = value => write("pins", value);
 const getTheme = () => read("theme", "system");
 const saveTheme = value => write("theme", value);
+const getInterfaceLanguage = () => read("interface-language", "tl") === "en" ? "en" : "tl";
+const saveInterfaceLanguage = value => write("interface-language", value === "en" ? "en" : "tl");
 const getNav = () => {
   const value = read("nav", { lang: "python", lastTopic: {} });
   return {
@@ -84,5 +86,5 @@ function togglePin(snippet) {
   savePins(pins);
   return pins;
 }
-K.store = { getProgress, saveProgress, getPins, savePins, getTheme, saveTheme, getNav, saveNav, markComplete, awardXP, togglePin };
+K.store = { getProgress, saveProgress, getPins, savePins, getTheme, saveTheme, getInterfaceLanguage, saveInterfaceLanguage, getNav, saveNav, markComplete, awardXP, togglePin };
 })(window.Kodigo = window.Kodigo || {});
